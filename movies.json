@@ -1,20 +1,11 @@
 [
   {
-    "id": "avatar2",
-    "title": "Avatar 2",
-    "description": "Jake Sully lives with his new family on the planet Pandora.",
-    "tags": ["Sci-Fi", "Action", "2022"],
-    "thumbnail": "https://i.imgur.com/qf0RJnT.jpg",
-    "file_id": "FILE_ID_AVATAR",
-    "trailerUrl": "https://www.youtube.com/embed/d9MyW72ELq0"
-  },
-  {
-    "id": "jawan",
-    "title": "Jawan",
-    "description": "Shah Rukh Khan in a high-octane action thriller.",
-    "tags": ["Hindi", "Action", "2023"],
-    "thumbnail": "https://i.imgur.com/qZ0R6R3.jpg",
-    "file_id": "FILE_ID_JAWAN",
-    "trailerUrl": ""  // ← No trailer for this one
+    "id": "test1",
+    "title": "John Wick",
+    "description": "An ex-hitman comes out of retirement to track down the gangsters that killed his dog.",
+    "thumbnail": "https://m.media-amazon.com/images/M/MV5BZjFiNWRlMjQtZmMyZi00OGQzLWJmYjMtMTY1MTBhNWE1YTIzXkEyXkFqcGdeQXVyODAzNzAwOTU@._V1_.jpg",
+    "tags": ["Action", "Crime"],
+    "file_id": "abc123",
+    "trailerUrl": "https://www.youtube.com/embed/C0BMx-qxsP4"
   }
 ]
