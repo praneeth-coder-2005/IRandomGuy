@@ -6,16 +6,16 @@ fetch('movies.json')
   .then(res => res.json())
   .then(data => {
     allMovies = data;
-    const allGenres = getUniqueGenres(data);
-    renderGenreFilters(allGenres);
+    const genres = getUniqueGenres(data);
+    renderGenreFilters(genres);
     renderMovies(data);
+    renderContinueWatching();
   });
 
-// Extract unique genres
+// Unique genres
 function getUniqueGenres(data) {
   const tags = data.flatMap(m => m.tags);
-  const unique = [...new Set(tags)];
-  return ["All", ...unique];
+  return ["All", ...new Set(tags)];
 }
 
 // Render genre tabs
@@ -39,7 +39,7 @@ function renderGenreFilters(genres) {
   });
 }
 
-// Render cards
+// Render grid
 function renderMovies(movies) {
   const container = document.getElementById("movieGrid");
   container.innerHTML = '';
@@ -59,11 +59,38 @@ function renderMovies(movies) {
   });
 }
 
-// Search logic
+// Search input
 document.getElementById("searchInput").addEventListener("input", (e) => {
   const keyword = e.target.value.toLowerCase();
   const filtered = allMovies.filter(m => m.title.toLowerCase().includes(keyword));
   renderMovies(filtered);
-  currentGenre = "All"; // Reset genre on search
+  currentGenre = "All";
   renderGenreFilters(getUniqueGenres(allMovies));
 });
+
+// Continue Watching
+function renderContinueWatching() {
+  const recentIds = JSON.parse(localStorage.getItem("recentMovies") || "[]");
+  if (recentIds.length === 0) return;
+
+  const recentSection = document.getElementById("recentSection");
+  const recentDiv = document.getElementById("recentMovies");
+
+  const recentMovies = recentIds
+    .map(id => allMovies.find(m => m.id === id))
+    .filter(Boolean);
+
+  if (recentMovies.length) {
+    recentSection.classList.remove("hidden");
+    recentMovies.forEach(movie => {
+      recentDiv.innerHTML += `
+        <a href="movie.html?id=${movie.id}" class="min-w-[150px] bg-gray-800 rounded-lg overflow-hidden shadow hover:scale-105 transition">
+          <img src="${movie.thumbnail}" class="w-full h-28 object-cover">
+          <div class="p-2">
+            <h2 class="text-sm font-bold">${movie.title}</h2>
+          </div>
+        </a>
+      `;
+    });
+  }
+}
