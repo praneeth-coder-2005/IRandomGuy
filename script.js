@@ -1,24 +1,26 @@
 let allMovies = [];
 let currentGenre = "All";
 
-// Load movies
+// Load movie data
 fetch('movies.json')
   .then(res => res.json())
   .then(data => {
     allMovies = data;
+
     const genres = getUniqueGenres(data);
     renderGenreFilters(genres);
     renderMovies(data);
     renderContinueWatching();
+    renderFeaturedBanner();
   });
 
-// Unique genres
+// Extract unique genres from tags
 function getUniqueGenres(data) {
   const tags = data.flatMap(m => m.tags);
   return ["All", ...new Set(tags)];
 }
 
-// Render genre tabs
+// Render Genre Tabs
 function renderGenreFilters(genres) {
   const container = document.getElementById("genreFilters");
   container.innerHTML = "";
@@ -39,7 +41,7 @@ function renderGenreFilters(genres) {
   });
 }
 
-// Render grid
+// Render Movies Grid
 function renderMovies(movies) {
   const container = document.getElementById("movieGrid");
   container.innerHTML = '';
@@ -59,7 +61,7 @@ function renderMovies(movies) {
   });
 }
 
-// Search input
+// Search Bar
 document.getElementById("searchInput").addEventListener("input", (e) => {
   const keyword = e.target.value.toLowerCase();
   const filtered = allMovies.filter(m => m.title.toLowerCase().includes(keyword));
@@ -68,7 +70,7 @@ document.getElementById("searchInput").addEventListener("input", (e) => {
   renderGenreFilters(getUniqueGenres(allMovies));
 });
 
-// Continue Watching
+// Continue Watching Section
 function renderContinueWatching() {
   const recentIds = JSON.parse(localStorage.getItem("recentMovies") || "[]");
   if (recentIds.length === 0) return;
@@ -82,6 +84,7 @@ function renderContinueWatching() {
 
   if (recentMovies.length) {
     recentSection.classList.remove("hidden");
+    recentDiv.innerHTML = "";
     recentMovies.forEach(movie => {
       recentDiv.innerHTML += `
         <a href="movie.html?id=${movie.id}" class="min-w-[150px] bg-gray-800 rounded-lg overflow-hidden shadow hover:scale-105 transition">
@@ -93,4 +96,23 @@ function renderContinueWatching() {
       `;
     });
   }
+}
+
+// 🎬 Featured Banner Section
+function renderFeaturedBanner() {
+  const banner = document.getElementById("featuredBanner");
+  const randomMovie = allMovies[Math.floor(Math.random() * allMovies.length)];
+
+  banner.innerHTML = `
+    <div class="absolute inset-0">
+      <img src="${randomMovie.thumbnail}" class="w-full h-full object-cover brightness-[.4]">
+    </div>
+    <div class="absolute bottom-5 left-5 text-white">
+      <h2 class="text-2xl font-bold">${randomMovie.title}</h2>
+      <p class="text-sm text-gray-200 w-2/3">${randomMovie.description.slice(0, 100)}...</p>
+      <a href="movie.html?id=${randomMovie.id}" class="inline-block mt-3 bg-red-500 px-4 py-2 rounded font-semibold shadow">
+        🎬 Watch Now
+      </a>
+    </div>
+  `;
 }
