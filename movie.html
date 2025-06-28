@@ -8,7 +8,6 @@
 </head>
 <body class="bg-black text-white">
 
-  <!-- Back Button -->
   <div class="p-4">
     <a href="index.html" class="text-red-400 text-sm hover:underline">⬅️ Back to Movies</a>
     <div id="movieDetail" class="mt-4"></div>
@@ -35,17 +34,21 @@
           return;
         }
 
-        // ✅ Save to localStorage
+        // Save to recent
         let recent = JSON.parse(localStorage.getItem("recentMovies") || "[]");
         recent = recent.filter(id => id !== movie.id);
         recent.unshift(movie.id);
         if (recent.length > 4) recent = recent.slice(0, 4);
         localStorage.setItem("recentMovies", JSON.stringify(recent));
 
-        // Bot username
-        const botUsername = "claw_earning_bot";
+        // Favorites check
+        let favs = JSON.parse(localStorage.getItem("favMovies") || "[]");
+        let isFav = favs.includes(movie.id);
 
-        // Render UI
+        const favBtn = isFav
+          ? `<button onclick="toggleFav('${movie.id}')" class="bg-yellow-500 px-4 py-2 rounded font-bold">❤️ Remove</button>`
+          : `<button onclick="toggleFav('${movie.id}')" class="bg-gray-600 px-4 py-2 rounded font-bold">🤍 Favorite</button>`;
+
         document.getElementById("movieDetail").innerHTML = `
           <img src="${movie.thumbnail}" class="w-full rounded-xl mb-4 shadow-lg">
           <h1 class="text-2xl font-bold">${movie.title}</h1>
@@ -53,19 +56,25 @@
           <div class="flex flex-wrap gap-2 mt-3">
             ${movie.tags.map(tag => `<span class="text-xs bg-red-600 px-2 py-0.5 rounded-full">${tag}</span>`).join('')}
           </div>
-          <div class="flex gap-4 mt-6">
-            <a href="https://t.me/${botUsername}?start=${movie.file_id}" target="_blank" class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded font-bold text-white">
-              🎬 Watch on Telegram
-            </a>
-            ${movie.trailerUrl ? `
-              <button onclick="playTrailer('${movie.trailerUrl}')" class="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded font-semibold text-white">
-                ▶️ Trailer
-              </button>` : ''}
+          <div class="flex gap-4 mt-6 flex-wrap">
+            <a href="https://t.me/claw_earning_bot?start=${movie.file_id}" target="_blank" class="bg-red-500 px-4 py-2 rounded font-bold">🎬 Watch</a>
+            ${movie.trailerUrl ? `<button onclick="playTrailer('${movie.trailerUrl}')" class="bg-blue-700 px-4 py-2 rounded font-bold">▶️ Trailer</button>` : ''}
+            ${favBtn}
           </div>
         `;
       });
 
-    // Open Trailer
+    function toggleFav(id) {
+      let favs = JSON.parse(localStorage.getItem("favMovies") || "[]");
+      if (favs.includes(id)) {
+        favs = favs.filter(m => m !== id);
+      } else {
+        favs.push(id);
+      }
+      localStorage.setItem("favMovies", JSON.stringify(favs));
+      location.reload(); // refresh to reflect
+    }
+
     function playTrailer(url) {
       const modal = document.getElementById("trailerModal");
       const iframe = document.getElementById("trailerFrame");
@@ -73,12 +82,9 @@
       modal.classList.remove("hidden");
     }
 
-    // Close Trailer
     function closeModal() {
-      const modal = document.getElementById("trailerModal");
-      const iframe = document.getElementById("trailerFrame");
-      iframe.src = "";
-      modal.classList.add("hidden");
+      document.getElementById("trailerModal").classList.add("hidden");
+      document.getElementById("trailerFrame").src = "";
     }
   </script>
 </body>
