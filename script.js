@@ -1,17 +1,48 @@
-let allMovies = []
+let allMovies = [];
+let currentGenre = "All";
 
-// Fetch and render
+// Load movies
 fetch('movies.json')
   .then(res => res.json())
   .then(data => {
-    allMovies = data
-    renderMovies(data)
-  })
+    allMovies = data;
+    const allGenres = getUniqueGenres(data);
+    renderGenreFilters(allGenres);
+    renderMovies(data);
+  });
 
-// Render movie cards
+// Extract unique genres
+function getUniqueGenres(data) {
+  const tags = data.flatMap(m => m.tags);
+  const unique = [...new Set(tags)];
+  return ["All", ...unique];
+}
+
+// Render genre tabs
+function renderGenreFilters(genres) {
+  const container = document.getElementById("genreFilters");
+  container.innerHTML = "";
+  genres.forEach(genre => {
+    const btn = document.createElement("button");
+    btn.textContent = genre;
+    btn.className = `px-3 py-1 rounded-full border border-gray-700 hover:bg-red-600 transition ${
+      genre === currentGenre ? "bg-red-500 text-white font-bold" : "text-gray-300"
+    }`;
+    btn.addEventListener("click", () => {
+      currentGenre = genre;
+      document.getElementById("searchInput").value = "";
+      renderGenreFilters(genres);
+      const filtered = genre === "All" ? allMovies : allMovies.filter(m => m.tags.includes(genre));
+      renderMovies(filtered);
+    });
+    container.appendChild(btn);
+  });
+}
+
+// Render cards
 function renderMovies(movies) {
-  const container = document.getElementById("movieGrid")
-  container.innerHTML = ''
+  const container = document.getElementById("movieGrid");
+  container.innerHTML = '';
   movies.forEach(movie => {
     container.innerHTML += `
       <a href="movie.html?id=${movie.id}" class="block bg-gray-800 rounded-xl overflow-hidden shadow-lg hover:scale-105 transition">
@@ -24,13 +55,15 @@ function renderMovies(movies) {
           </div>
         </div>
       </a>
-    `
-  })
+    `;
+  });
 }
 
-// Search filter
+// Search logic
 document.getElementById("searchInput").addEventListener("input", (e) => {
-  const keyword = e.target.value.toLowerCase()
-  const filtered = allMovies.filter(m => m.title.toLowerCase().includes(keyword))
-  renderMovies(filtered)
-})
+  const keyword = e.target.value.toLowerCase();
+  const filtered = allMovies.filter(m => m.title.toLowerCase().includes(keyword));
+  renderMovies(filtered);
+  currentGenre = "All"; // Reset genre on search
+  renderGenreFilters(getUniqueGenres(allMovies));
+});
