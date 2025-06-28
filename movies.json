@@ -2,17 +2,17 @@
   {
     "id": "avatar2",
     "title": "Avatar 2",
-    "description": "Jake Sully lives with his new family...",
+    "description": "Jake Sully lives with his new family on the planet Pandora.",
     "tags": ["Sci-Fi", "Action", "2022"],
     "thumbnail": "https://i.imgur.com/qf0RJnT.jpg",
-    "file_id": "AAACAgUAA..."
+    "file_id": "AAACAgUAA..._avatar"
   },
   {
     "id": "jawan",
     "title": "Jawan",
-    "description": "SRK's high-octane action film...",
+    "description": "Shah Rukh Khan in a high-octane action thriller.",
     "tags": ["Hindi", "Action", "2023"],
     "thumbnail": "https://i.imgur.com/qZ0R6R3.jpg",
-    "file_id": "BBACAgUAA..."
+    "file_id": "BBACAgUAA..._jawan"
   }
 ]
