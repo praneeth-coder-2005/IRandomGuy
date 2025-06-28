@@ -5,10 +5,11 @@ fetch('movies.json')
   .then(data => {
     allMovies = data;
     renderFeaturedBanner();
+    renderFavorites();
     renderCategoryRows();
   });
 
-// Featured banner
+// Featured Banner
 function renderFeaturedBanner() {
   const banner = document.getElementById("featuredBanner");
   const movie = allMovies[Math.floor(Math.random() * allMovies.length)];
@@ -27,11 +28,12 @@ function renderFeaturedBanner() {
   `;
 }
 
-// Group by genre
+// Render Category Rows (by tag)
 function renderCategoryRows() {
   const container = document.getElementById("categorySections");
   const tags = getUniqueTags(allMovies);
 
+  container.innerHTML = "";
   tags.forEach(tag => {
     const movies = allMovies.filter(m => m.tags.includes(tag));
     if (movies.length === 0) return;
@@ -54,13 +56,40 @@ function renderCategoryRows() {
   });
 }
 
-// Get all unique tags
 function getUniqueTags(data) {
   const all = data.flatMap(m => m.tags);
   return [...new Set(all)];
 }
 
-// Search filter
+// Favorites Renderer
+function renderFavorites() {
+  const favIds = JSON.parse(localStorage.getItem("favMovies") || "[]");
+  if (favIds.length === 0) return;
+
+  const favSection = document.getElementById("favSection");
+  const favDiv = document.getElementById("favMovies");
+
+  const favMovies = favIds
+    .map(id => allMovies.find(m => m.id === id))
+    .filter(Boolean);
+
+  if (favMovies.length) {
+    favSection.classList.remove("hidden");
+    favDiv.innerHTML = "";
+    favMovies.forEach(movie => {
+      favDiv.innerHTML += `
+        <a href="movie.html?id=${movie.id}" class="min-w-[150px] bg-gray-800 rounded-lg overflow-hidden shadow hover:scale-105 transition">
+          <img src="${movie.thumbnail}" class="w-full h-28 object-cover">
+          <div class="p-2">
+            <h2 class="text-sm font-bold">${movie.title}</h2>
+          </div>
+        </a>
+      `;
+    });
+  }
+}
+
+// Search Handler
 document.getElementById("searchInput").addEventListener("input", (e) => {
   const keyword = e.target.value.toLowerCase();
   const results = allMovies.filter(m => m.title.toLowerCase().includes(keyword));
