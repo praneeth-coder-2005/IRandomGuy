@@ -4,15 +4,22 @@
   <meta charset="UTF-8" />
   <title>Movie Details</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-black text-white">
 
-  <!-- Back button -->
+  <!-- Back Button -->
   <div class="p-4">
     <a href="index.html" class="text-red-400 text-sm hover:underline">⬅️ Back to Movies</a>
     <div id="movieDetail" class="mt-4"></div>
+  </div>
+
+  <!-- Trailer Modal -->
+  <div id="trailerModal" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center hidden z-50">
+    <div class="relative w-full max-w-2xl aspect-video">
+      <iframe id="trailerFrame" class="w-full h-full rounded-lg" frameborder="0" allowfullscreen></iframe>
+      <button onclick="closeModal()" class="absolute top-2 right-2 bg-red-500 text-white px-3 py-1 rounded-full">✖</button>
+    </div>
   </div>
 
   <script>
@@ -28,9 +35,17 @@
           return;
         }
 
-        // Replace this with your bot username
+        // ✅ Save to localStorage
+        let recent = JSON.parse(localStorage.getItem("recentMovies") || "[]");
+        recent = recent.filter(id => id !== movie.id);
+        recent.unshift(movie.id);
+        if (recent.length > 4) recent = recent.slice(0, 4);
+        localStorage.setItem("recentMovies", JSON.stringify(recent));
+
+        // Bot username
         const botUsername = "claw_earning_bot";
 
+        // Render UI
         document.getElementById("movieDetail").innerHTML = `
           <img src="${movie.thumbnail}" class="w-full rounded-xl mb-4 shadow-lg">
           <h1 class="text-2xl font-bold">${movie.title}</h1>
@@ -38,11 +53,33 @@
           <div class="flex flex-wrap gap-2 mt-3">
             ${movie.tags.map(tag => `<span class="text-xs bg-red-600 px-2 py-0.5 rounded-full">${tag}</span>`).join('')}
           </div>
-          <a href="https://t.me/${botUsername}?start=${movie.file_id}" target="_blank" class="block mt-6 bg-red-500 hover:bg-red-600 text-center py-2 rounded font-bold text-white">
-            🎬 Watch on Telegram
-          </a>
+          <div class="flex gap-4 mt-6">
+            <a href="https://t.me/${botUsername}?start=${movie.file_id}" target="_blank" class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded font-bold text-white">
+              🎬 Watch on Telegram
+            </a>
+            ${movie.trailerUrl ? `
+              <button onclick="playTrailer('${movie.trailerUrl}')" class="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded font-semibold text-white">
+                ▶️ Trailer
+              </button>` : ''}
+          </div>
         `;
       });
+
+    // Open Trailer
+    function playTrailer(url) {
+      const modal = document.getElementById("trailerModal");
+      const iframe = document.getElementById("trailerFrame");
+      iframe.src = url;
+      modal.classList.remove("hidden");
+    }
+
+    // Close Trailer
+    function closeModal() {
+      const modal = document.getElementById("trailerModal");
+      const iframe = document.getElementById("trailerFrame");
+      iframe.src = "";
+      modal.classList.add("hidden");
+    }
   </script>
 </body>
 </html>
