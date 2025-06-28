@@ -3,7 +3,7 @@
     "id": "test1",
     "title": "John Wick",
     "description": "An ex-hitman comes out of retirement to track down the gangsters that killed his dog.",
-    "thumbnail": "https://m.media-amazon.com/images/M/MV5BZjFiNWRlMjQtZmMyZi00OGQzLWJmYjMtMTY1MTBhNWE1YTIzXkEyXkFqcGdeQXVyODAzNzAwOTU@._V1_.jpg",
+    "thumbnail": "https://media.themoviedb.org/t/p/w220_and_h330_face/1QdXdRYfktUSONkl1oD5gc6Be0s.jpg",
     "tags": ["Action", "Crime"],
     "file_id": "abc123",
     "trailerUrl": "https://www.youtube.com/embed/C0BMx-qxsP4"
