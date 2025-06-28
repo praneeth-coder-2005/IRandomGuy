@@ -1,5 +1,9 @@
 let allMovies = [];
 
+// Load theme preference
+const savedTheme = localStorage.getItem("theme");
+if (savedTheme) document.documentElement.setAttribute("data-theme", savedTheme);
+
 fetch('movies.json')
   .then(res => res.json())
   .then(data => {
@@ -9,7 +13,6 @@ fetch('movies.json')
     renderCategoryRows();
   });
 
-// Featured Banner
 function renderFeaturedBanner() {
   const banner = document.getElementById("featuredBanner");
   const movie = allMovies[Math.floor(Math.random() * allMovies.length)];
@@ -28,7 +31,33 @@ function renderFeaturedBanner() {
   `;
 }
 
-// Render Category Rows (by tag)
+function renderFavorites() {
+  const favIds = JSON.parse(localStorage.getItem("favMovies") || "[]");
+  if (favIds.length === 0) return;
+
+  const favSection = document.getElementById("favSection");
+  const favDiv = document.getElementById("favMovies");
+
+  const favMovies = favIds
+    .map(id => allMovies.find(m => m.id === id))
+    .filter(Boolean);
+
+  if (favMovies.length) {
+    favSection.classList.remove("hidden");
+    favDiv.innerHTML = "";
+    favMovies.forEach(movie => {
+      favDiv.innerHTML += `
+        <a href="movie.html?id=${movie.id}" class="min-w-[150px] bg-gray-800 rounded-lg overflow-hidden shadow hover:scale-105 transition">
+          <img src="${movie.thumbnail}" class="w-full h-28 object-cover">
+          <div class="p-2">
+            <h2 class="text-sm font-bold">${movie.title}</h2>
+          </div>
+        </a>
+      `;
+    });
+  }
+}
+
 function renderCategoryRows() {
   const container = document.getElementById("categorySections");
   const tags = getUniqueTags(allMovies);
@@ -61,35 +90,6 @@ function getUniqueTags(data) {
   return [...new Set(all)];
 }
 
-// Favorites Renderer
-function renderFavorites() {
-  const favIds = JSON.parse(localStorage.getItem("favMovies") || "[]");
-  if (favIds.length === 0) return;
-
-  const favSection = document.getElementById("favSection");
-  const favDiv = document.getElementById("favMovies");
-
-  const favMovies = favIds
-    .map(id => allMovies.find(m => m.id === id))
-    .filter(Boolean);
-
-  if (favMovies.length) {
-    favSection.classList.remove("hidden");
-    favDiv.innerHTML = "";
-    favMovies.forEach(movie => {
-      favDiv.innerHTML += `
-        <a href="movie.html?id=${movie.id}" class="min-w-[150px] bg-gray-800 rounded-lg overflow-hidden shadow hover:scale-105 transition">
-          <img src="${movie.thumbnail}" class="w-full h-28 object-cover">
-          <div class="p-2">
-            <h2 class="text-sm font-bold">${movie.title}</h2>
-          </div>
-        </a>
-      `;
-    });
-  }
-}
-
-// Search Handler
 document.getElementById("searchInput").addEventListener("input", (e) => {
   const keyword = e.target.value.toLowerCase();
   const results = allMovies.filter(m => m.title.toLowerCase().includes(keyword));
@@ -120,4 +120,18 @@ document.getElementById("searchInput").addEventListener("input", (e) => {
       `;
     });
   }
-});
+}
+
+// 🌗 Toggle Theme
+function toggleTheme() {
+  const html = document.documentElement;
+  const current = html.getAttribute("data-theme") === "dark" ? "light" : "dark";
+  html.setAttribute("data-theme", current);
+  localStorage.setItem("theme", current);
+}
+
+// 🔀 Shuffle Movie
+function shuffleMovie() {
+  const random = allMovies[Math.floor(Math.random() * allMovies.length)];
+  window.location.href = `movie.html?id=${random.id}`;
+    }
