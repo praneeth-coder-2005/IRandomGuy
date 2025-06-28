@@ -5,7 +5,8 @@
     "description": "Jake Sully lives with his new family on the planet Pandora.",
     "tags": ["Sci-Fi", "Action", "2022"],
     "thumbnail": "https://i.imgur.com/qf0RJnT.jpg",
-    "file_id": "AAACAgUAA..._avatar"
+    "file_id": "FILE_ID_AVATAR",
+    "trailerUrl": "https://www.youtube.com/embed/d9MyW72ELq0"
   },
   {
     "id": "jawan",
@@ -13,6 +14,7 @@
     "description": "Shah Rukh Khan in a high-octane action thriller.",
     "tags": ["Hindi", "Action", "2023"],
     "thumbnail": "https://i.imgur.com/qZ0R6R3.jpg",
-    "file_id": "BBACAgUAA..._jawan"
+    "file_id": "FILE_ID_JAWAN",
+    "trailerUrl": ""  // ← No trailer for this one
   }
 ]
