@@ -5,6 +5,11 @@
   <title>🎬 MovieVerse</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .skeleton {
+      @apply animate-pulse bg-gray-700 rounded;
+    }
+  </style>
 </head>
 <body class="bg-black text-white">
 
@@ -14,7 +19,7 @@
     <input type="text" id="searchInput" placeholder="Search movies..." class="mt-3 w-full p-2 rounded bg-gray-800 text-white">
   </div>
 
-  <!-- 🔥 Featured Banner -->
+  <!-- Featured Banner -->
   <div id="featuredBanner" class="relative h-64 sm:h-80 overflow-hidden"></div>
 
   <!-- Continue Watching -->
@@ -26,8 +31,21 @@
   <!-- Genre Filters -->
   <div id="genreFilters" class="flex flex-wrap gap-2 px-4 py-3 bg-gray-950 overflow-x-auto text-sm"></div>
 
+  <!-- Skeleton Loader -->
+  <div id="skeletonLoader" class="p-4 grid grid-cols-2 sm:grid-cols-3 gap-4">
+    ${[...Array(6)].map(() => `
+      <div class="skeleton h-48 w-full"></div>
+    `).join('')}
+  </div>
+
   <!-- Movie Grid -->
-  <div id="movieGrid" class="p-4 grid grid-cols-2 sm:grid-cols-3 gap-4"></div>
+  <div id="movieGrid" class="p-4 grid grid-cols-2 sm:grid-cols-3 gap-4 hidden"></div>
+
+  <!-- Empty Search Result -->
+  <div id="emptyState" class="hidden text-center text-gray-400 py-10">
+    <img src="https://i.imgur.com/H4XHkyE.png" class="mx-auto w-32 mb-4 opacity-70">
+    <p class="text-lg">No movies found!</p>
+  </div>
 
   <!-- JS -->
   <script src="script.js"></script>
