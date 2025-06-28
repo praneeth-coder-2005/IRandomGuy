@@ -1,26 +1,27 @@
 let allMovies = [];
 let currentGenre = "All";
 
-// Load movie data
 fetch('movies.json')
   .then(res => res.json())
   .then(data => {
     allMovies = data;
-
     const genres = getUniqueGenres(data);
+
     renderGenreFilters(genres);
-    renderMovies(data);
-    renderContinueWatching();
     renderFeaturedBanner();
+    renderContinueWatching();
+    renderMovies(data);
+
+    // Hide loader and show grid
+    document.getElementById("skeletonLoader").style.display = "none";
+    document.getElementById("movieGrid").classList.remove("hidden");
   });
 
-// Extract unique genres from tags
 function getUniqueGenres(data) {
   const tags = data.flatMap(m => m.tags);
   return ["All", ...new Set(tags)];
 }
 
-// Render Genre Tabs
 function renderGenreFilters(genres) {
   const container = document.getElementById("genreFilters");
   container.innerHTML = "";
@@ -41,12 +42,22 @@ function renderGenreFilters(genres) {
   });
 }
 
-// Render Movies Grid
 function renderMovies(movies) {
-  const container = document.getElementById("movieGrid");
-  container.innerHTML = '';
+  const grid = document.getElementById("movieGrid");
+  const empty = document.getElementById("emptyState");
+  grid.innerHTML = '';
+
+  if (movies.length === 0) {
+    empty.classList.remove("hidden");
+    grid.classList.add("hidden");
+    return;
+  }
+
+  empty.classList.add("hidden");
+  grid.classList.remove("hidden");
+
   movies.forEach(movie => {
-    container.innerHTML += `
+    grid.innerHTML += `
       <a href="movie.html?id=${movie.id}" class="block bg-gray-800 rounded-xl overflow-hidden shadow-lg hover:scale-105 transition">
         <img src="${movie.thumbnail}" class="w-full h-40 object-cover">
         <div class="p-3">
@@ -61,7 +72,6 @@ function renderMovies(movies) {
   });
 }
 
-// Search Bar
 document.getElementById("searchInput").addEventListener("input", (e) => {
   const keyword = e.target.value.toLowerCase();
   const filtered = allMovies.filter(m => m.title.toLowerCase().includes(keyword));
@@ -70,7 +80,6 @@ document.getElementById("searchInput").addEventListener("input", (e) => {
   renderGenreFilters(getUniqueGenres(allMovies));
 });
 
-// Continue Watching Section
 function renderContinueWatching() {
   const recentIds = JSON.parse(localStorage.getItem("recentMovies") || "[]");
   if (recentIds.length === 0) return;
@@ -98,7 +107,6 @@ function renderContinueWatching() {
   }
 }
 
-// 🎬 Featured Banner Section
 function renderFeaturedBanner() {
   const banner = document.getElementById("featuredBanner");
   const randomMovie = allMovies[Math.floor(Math.random() * allMovies.length)];
