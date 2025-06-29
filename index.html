@@ -6,162 +6,81 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css"/>
   <style>
-    body {
-      margin: 0;
-      background-color: #111;
-      color: white;
-      font-family: 'Segoe UI', sans-serif;
-    }
-
+    body { margin: 0; background-color: #111; color: white; font-family: 'Segoe UI', sans-serif; }
     .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: #000;
-      padding: 10px 15px;
+      display: flex; justify-content: space-between; align-items: center;
+      background: #000; padding: 10px 15px;
     }
-
-    .header img {
-      height: 40px;
+    .header img { height: 40px; }
+    .header .menu, .header .search {
+      font-size: 24px; color: white; cursor: pointer;
     }
-
-    .header .menu,
-    .header .search {
-      font-size: 24px;
-      color: white;
-      cursor: pointer;
-    }
-
-    .swiper {
-      width: 100%;
-      height: 220px;
-    }
-
-    .swiper-slide {
-      position: relative;
-      border-radius: 8px;
-      overflow: hidden;
-    }
-
-    .swiper-slide img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
+    .swiper { width: 100%; height: 220px; }
+    .swiper-slide { position: relative; border-radius: 8px; overflow: hidden; }
+    .swiper-slide img { width: 100%; height: 100%; object-fit: cover; }
     .slide-title {
-      position: absolute;
-      bottom: 40px;
-      left: 10px;
-      font-size: 18px;
-      font-weight: bold;
-      color: white;
+      position: absolute; bottom: 40px; left: 10px;
+      font-size: 18px; font-weight: bold; color: white;
       text-shadow: 0 0 5px black;
     }
-
     .slide-year {
-      position: absolute;
-      bottom: 20px;
-      left: 10px;
-      font-size: 14px;
-      color: #ccc;
+      position: absolute; bottom: 20px; left: 10px;
+      font-size: 14px; color: #ccc;
     }
-
     .slide-type {
-      position: absolute;
-      bottom: 20px;
-      right: 10px;
-      background: #2196F3;
-      padding: 2px 8px;
-      font-size: 12px;
-      border-radius: 3px;
-      color: white;
+      position: absolute; bottom: 20px; right: 10px;
+      background: #2196F3; padding: 2px 8px; font-size: 12px;
+      border-radius: 3px; color: white;
     }
-
     .section-title {
-      margin: 20px 15px 10px;
-      font-size: 20px;
-      font-weight: bold;
-      border-left: 4px solid #2196F3;
-      padding-left: 10px;
+      margin: 20px 15px 10px; font-size: 20px; font-weight: bold;
+      border-left: 4px solid #2196F3; padding-left: 10px;
     }
-
     .featured-row {
-      display: flex;
-      overflow-x: auto;
-      padding: 0 10px;
-      gap: 10px;
+      display: flex; overflow-x: auto; padding: 0 10px; gap: 10px;
     }
-
     .featured-card {
-      background: #222;
-      flex: 0 0 auto;
-      width: 120px;
-      border-radius: 8px;
-      overflow: hidden;
-      position: relative;
+      background: #222; flex: 0 0 auto; width: 120px;
+      border-radius: 8px; overflow: hidden; position: relative;
       cursor: pointer;
     }
-
     .featured-card img {
-      width: 100%;
-      height: 160px;
-      object-fit: cover;
+      width: 100%; height: 160px; object-fit: cover;
     }
-
     .featured-badge {
-      position: absolute;
-      top: 5px;
-      left: 5px;
-      background: green;
-      color: white;
-      font-size: 10px;
-      padding: 2px 5px;
-      border-radius: 3px;
+      position: absolute; top: 5px; left: 5px;
+      background: green; color: white; font-size: 10px;
+      padding: 2px 5px; border-radius: 3px;
     }
-
     .featured-title {
-      padding: 5px 6px;
-      font-size: 14px;
-      font-style: italic;
+      padding: 5px 6px; font-size: 14px; font-style: italic;
     }
-
     .featured-row::-webkit-scrollbar {
       height: 5px;
     }
-
     .featured-row::-webkit-scrollbar-thumb {
-      background: #333;
-      border-radius: 3px;
+      background: #333; border-radius: 3px;
     }
-
-    .all-movies-section {
-      margin: 30px 10px;
-    }
-
-    .all-grid {
+    .grid-container {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
+      gap: 12px;
+      padding: 20px 10px 40px;
     }
-
-    .movie-box {
+    .grid-card {
       background: #222;
       border-radius: 8px;
       overflow: hidden;
       cursor: pointer;
     }
-
-    .movie-box img {
+    .grid-card img {
       width: 100%;
-      height: 160px;
+      height: 180px;
       object-fit: cover;
     }
-
-    .movie-box-title {
-      padding: 8px;
+    .grid-card .info {
+      padding: 6px 8px;
       font-size: 14px;
-      text-align: center;
     }
   </style>
 </head>
@@ -174,39 +93,39 @@
   </div>
 
   <div class="swiper" id="slider-wrapper">
-    <div class="swiper-wrapper" id="swiper-slides"></div>
+    <div class="swiper-wrapper" id="swiper-slides">
+      <!-- Slides injected here -->
+    </div>
     <div class="swiper-pagination"></div>
   </div>
 
   <div class="section-title">Featured Titles</div>
-  <div class="featured-row" id="featured-row"></div>
-
-  <div class="section-title">All Movies</div>
-  <div class="all-movies-section">
-    <div class="all-grid" id="all-grid"></div>
+  <div class="featured-row" id="featured-row">
+    <!-- Cards injected here -->
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <div class="section-title">All Titles</div>
+  <div class="grid-container" id="grid-container">
+    <!-- All grid movies go here -->
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
   <script>
     const supabase = supabase.createClient(
       'https://aoqszjgglkbceegjsreh.supabase.co',
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFvcXN6amdnbGtiY2VlZ2pzcmVoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEyMTA4MTMsImV4cCI6MjA2Njc4NjgxM30.GaB-OT2UTwKOrU8bJCrXa771hSYFgdU3GQC6Ge39nCQ'
     );
 
-    const swiperWrapper = document.getElementById('swiper-slides');
-    const featuredRow = document.getElementById('featured-row');
-    const allGrid = document.getElementById('all-grid');
-
     async function loadMovies() {
-      const { data: movies, error } = await supabase
-        .from('Movies')
-        .select('*')
-        .order('year', { ascending: false });
+      const { data, error } = await supabase.from("Movies").select("*").order("year", { ascending: false });
+      if (error) return alert("Failed to load movies.");
 
-      if (error) return console.error("Slider load error", error);
+      const swiperWrapper = document.getElementById('swiper-slides');
+      const featuredRow = document.getElementById('featured-row');
+      const gridContainer = document.getElementById('grid-container');
 
-      movies.slice(0, 5).forEach(movie => {
+      data.forEach(movie => {
         const slide = document.createElement('div');
         slide.className = 'swiper-slide';
         slide.innerHTML = `
@@ -217,9 +136,7 @@
         `;
         slide.onclick = () => window.location.href = `player.html?url=${encodeURIComponent(movie.url)}`;
         swiperWrapper.appendChild(slide);
-      });
 
-      movies.slice(0, 10).forEach(movie => {
         const card = document.createElement('div');
         card.className = 'featured-card';
         card.innerHTML = `
@@ -229,6 +146,15 @@
         `;
         card.onclick = () => window.location.href = `player.html?url=${encodeURIComponent(movie.url)}`;
         featuredRow.appendChild(card);
+
+        const grid = document.createElement('div');
+        grid.className = 'grid-card';
+        grid.innerHTML = `
+          <img src="${movie.poster}" />
+          <div class="info">${movie.title} (${movie.year})</div>
+        `;
+        grid.onclick = () => window.location.href = `player.html?url=${encodeURIComponent(movie.url)}`;
+        gridContainer.appendChild(grid);
       });
 
       new Swiper('.swiper', {
@@ -238,47 +164,7 @@
       });
     }
 
-    let page = 0;
-    const pageSize = 12;
-    let loading = false;
-
-    async function loadAllMovies() {
-      if (loading) return;
-      loading = true;
-
-      const { data, error } = await supabase
-        .from("Movies")
-        .select("*")
-        .order("year", { descending: true })
-        .range(page * pageSize, (page + 1) * pageSize - 1);
-
-      if (error) return console.error("All grid error", error);
-      if (data.length === 0) return;
-
-      data.forEach(movie => {
-        const box = document.createElement("div");
-        box.className = "movie-box";
-        box.innerHTML = `
-          <img src="${movie.poster}">
-          <div class="movie-box-title">${movie.title}</div>
-        `;
-        box.onclick = () => window.location.href = `player.html?url=${encodeURIComponent(movie.url)}`;
-        allGrid.appendChild(box);
-      });
-
-      page++;
-      loading = false;
-    }
-
-    window.addEventListener("scroll", () => {
-      if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 300) {
-        loadAllMovies();
-      }
-    });
-
     loadMovies();
-    loadAllMovies();
   </script>
-
 </body>
 </html>
