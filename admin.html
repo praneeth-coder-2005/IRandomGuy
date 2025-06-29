@@ -5,43 +5,41 @@
   <title>Admin Panel</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
-    body { background: #111; color: #fff; font-family: sans-serif; padding: 20px; }
-    header { display: flex; justify-content: space-between; align-items: center; }
+    body { background: #111; color: white; font-family: sans-serif; padding: 20px; }
     input, select, button {
       width: 100%; margin-top: 10px; padding: 10px;
       border: none; border-radius: 4px; background: #222;
       color: white; font-size: 14px;
     }
     button.add { background: #43a047; font-weight: bold; cursor: pointer; }
-    .logout { background: #e53935; width: auto; }
-    .preview, .poster-preview { margin-top: 20px; display: flex; gap: 12px; flex-wrap: wrap; }
+    button.use { background: #2196F3; margin-top: 8px; }
+    .logout { background: #e53935; width: auto; margin-left: 10px; }
+    .poster-preview img { margin-top: 10px; max-width: 100px; border-radius: 6px; }
+    .preview { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px; }
     .card {
-      background: #222; padding: 8px; border-radius: 6px;
-      text-align: center; width: 140px;
+      width: 140px; background: #222; border-radius: 6px; overflow: hidden;
+      text-align: center;
     }
-    .card img { width: 100%; border-radius: 6px; }
-    .card-title { margin-top: 6px; font-size: 13px; }
-    .action { cursor: pointer; margin-top: 4px; display: inline-block; }
+    .card img { width: 100%; }
+    .card-title { padding: 6px; font-size: 13px; }
+    .action { display: inline-block; margin: 4px; font-size: 18px; cursor: pointer; }
     .edit { color: #ffc107; }
-    .delete { color: #ef5350; margin-left: 10px; }
+    .delete { color: #e53935; }
   </style>
 </head>
 <body>
 
-  <header>
-    <h2>🎬 Troop Admin Panel</h2>
-    <div>
-      <button onclick="goHome()">Back</button>
-      <button class="logout" onclick="logout()">Logout</button>
-    </div>
-  </header>
+  <h2>🎬 Admin Panel</h2>
+  <button onclick="goHome()">🏠 Home</button>
+  <button class="logout" onclick="logout()">🚪 Logout</button>
 
   <label>Search Title</label>
   <input id="searchInput" placeholder="e.g. RRR">
   <button onclick="searchTMDB()">Search TMDb</button>
 
-  <label>Select Result</label>
+  <label>Select Movie</label>
   <select id="resultList"><option value="">-- No results --</option></select>
+  <button class="use" onclick="useSelected()">Use Selected Movie</button>
 
   <label>Poster</label><input id="poster" readonly />
   <label>Title</label><input id="title" readonly />
@@ -50,10 +48,9 @@
   <label>Video URL</label><input id="url" placeholder="https://video.mp4" />
 
   <div class="poster-preview" id="posterPreview"></div>
-
   <button class="add" onclick="addMovie()">Add / Update Movie</button>
 
-  <h3>Preview Added Movies</h3>
+  <h3>Preview Movies</h3>
   <div class="preview" id="previewList"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
@@ -67,7 +64,7 @@
     let editingMovieId = null;
 
     function goHome() {
-      window.location.href = "index.html";
+      location.href = "index.html";
     }
 
     function logout() {
@@ -76,66 +73,61 @@
     }
 
     async function searchTMDB() {
-      const query = document.getElementById("searchInput").value.trim();
-      const select = document.getElementById("resultList");
-      if (!query) return alert("Enter a movie name.");
-      select.innerHTML = `<option value="">Loading...</option>`;
-
-      const res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${TMDB_KEY}&query=${encodeURIComponent(query)}`);
+      const q = document.getElementById("searchInput").value.trim();
+      if (!q) return alert("Type a title first.");
+      const res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${TMDB_KEY}&query=${encodeURIComponent(q)}`);
       const json = await res.json();
+
+      const select = document.getElementById("resultList");
       select.innerHTML = '<option value="">-- Select --</option>';
 
       json.results
-        .filter(item => ['movie', 'tv'].includes(item.media_type) && item.poster_path)
-        .forEach(item => {
-          const name = item.title || item.name;
-          const year = (item.release_date || item.first_air_date || '').slice(0, 4);
-          select.innerHTML += `<option value="${item.id}|${item.media_type}">${name} (${year})</option>`;
+        .filter(r => ['movie','tv'].includes(r.media_type) && r.poster_path)
+        .forEach(r => {
+          const name = r.title || r.name;
+          const year = (r.release_date || r.first_air_date || "").slice(0,4);
+          const label = `${name} (${year})`;
+          select.innerHTML += `<option value="${r.id}|${r.media_type}">${label}</option>`;
         });
     }
 
-    document.addEventListener("DOMContentLoaded", () => {
-      document.getElementById("resultList").addEventListener("change", async function () {
-        const val = this.value;
-        if (!val) return;
-        const [id, type] = val.split("|");
+    async function useSelected() {
+      const val = document.getElementById("resultList").value;
+      if (!val) return alert("Please select a movie.");
+      const [id, type] = val.split("|");
 
-        const res = await fetch(`https://api.themoviedb.org/3/${type}/${id}?api_key=${TMDB_KEY}`);
-        const data = await res.json();
+      const res = await fetch(`https://api.themoviedb.org/3/${type}/${id}?api_key=${TMDB_KEY}`);
+      const data = await res.json();
 
-        const poster = data.poster_path ? `https://image.tmdb.org/t/p/w500${data.poster_path}` : "";
-        const title = data.title || data.name || "";
-        const year = (data.release_date || data.first_air_date || "").slice(0, 4);
-        const mediaType = type.toUpperCase();
+      const poster = data.poster_path ? `https://image.tmdb.org/t/p/w500${data.poster_path}` : "";
+      const title = data.title || data.name;
+      const year = (data.release_date || data.first_air_date || "").slice(0, 4);
 
-        document.getElementById("poster").value = poster;
-        document.getElementById("title").value = title;
-        document.getElementById("year").value = year;
-        document.getElementById("type").value = mediaType;
-        document.getElementById("posterPreview").innerHTML = poster ? `<img src="${poster}" width="100">` : '';
-      });
-    });
+      document.getElementById("poster").value = poster;
+      document.getElementById("title").value = title;
+      document.getElementById("year").value = year;
+      document.getElementById("type").value = type.toUpperCase();
+      document.getElementById("posterPreview").innerHTML = poster ? `<img src="${poster}">` : "";
+    }
 
     async function addMovie() {
-      const movie = {
-        poster: document.getElementById("poster").value,
-        title: document.getElementById("title").value,
-        year: document.getElementById("year").value,
-        type: document.getElementById("type").value,
-        url: document.getElementById("url").value.trim()
+      const m = {
+        poster: poster.value,
+        title: title.value,
+        year: year.value,
+        type: type.value,
+        url: url.value.trim()
       };
-
-      if (!movie.poster || !movie.title || !movie.url) return alert("Fill all fields.");
+      if (!m.poster || !m.title || !m.url) return alert("Fill all fields.");
 
       if (editingMovieId) {
-        await supabase.from("Movies").update(movie).eq("id", editingMovieId);
-        alert("Updated!");
+        await supabase.from("Movies").update(m).eq("id", editingMovieId);
+        alert("Movie updated.");
         editingMovieId = null;
       } else {
-        await supabase.from("Movies").insert([movie]);
-        alert("Added!");
+        await supabase.from("Movies").insert([m]);
+        alert("Movie added.");
       }
-
       clearForm();
       loadPreview();
     }
@@ -149,29 +141,23 @@
     async function editMovie(id) {
       const { data } = await supabase.from("Movies").select("*").eq("id", id).single();
       if (!data) return;
-
-      document.getElementById("poster").value = data.poster;
-      document.getElementById("title").value = data.title;
-      document.getElementById("year").value = data.year;
-      document.getElementById("type").value = data.type;
-      document.getElementById("url").value = data.url;
-      document.getElementById("posterPreview").innerHTML = data.poster ? `<img src="${data.poster}" width="100">` : '';
+      ['poster','title','year','type','url'].forEach(f => document.getElementById(f).value = data[f]);
+      document.getElementById("posterPreview").innerHTML = `<img src="${data.poster}">`;
       editingMovieId = id;
     }
 
     function clearForm() {
-      ['poster','title','year','type','url'].forEach(id => document.getElementById(id).value = '');
+      ['poster','title','year','type','url'].forEach(f => document.getElementById(f).value = '');
       document.getElementById("posterPreview").innerHTML = '';
       editingMovieId = null;
     }
 
     async function loadPreview() {
       const { data } = await supabase.from("Movies").select("*").order("year", { descending: true });
-      const preview = document.getElementById("previewList");
-      preview.innerHTML = "";
-
+      const out = document.getElementById("previewList");
+      out.innerHTML = '';
       data.forEach(m => {
-        preview.innerHTML += `
+        out.innerHTML += `
           <div class="card">
             <img src="${m.poster}">
             <div class="card-title">${m.title}</div>
@@ -179,8 +165,7 @@
               <span class="action edit" onclick="editMovie('${m.id}')">✏️</span>
               <span class="action delete" onclick="deleteMovie('${m.id}')">❌</span>
             </div>
-          </div>
-        `;
+          </div>`;
       });
     }
 
