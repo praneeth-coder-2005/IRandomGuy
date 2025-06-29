@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Fix TMDb Auto-Fill</title>
+</head>
+<body>
+  <input id="searchInput" placeholder="Search movie" />
+  <button onclick="searchTMDB()">Search TMDb</button>
+
+  <select id="resultList">
+    <option value="">-- No results --</option>
+  </select>
+
+  <p>Title: <input id="title" readonly /></p>
+  <p>Year: <input id="year" readonly /></p>
+  <p>Type: <input id="type" readonly /></p>
+  <p>Poster: <input id="poster" readonly /></p>
+  <div id="posterPreview"></div>
+
+  <script>
+    const TMDB_KEY = "bb5f40c5be4b24660cbdc20c2409835e";
+
+    async function searchTMDB() {
+      const q = document.getElementById("searchInput").value;
+      const res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${TMDB_KEY}&query=${encodeURIComponent(q)}`);
+      const json = await res.json();
+
+      const select = document.getElementById("resultList");
+      select.innerHTML = '<option value="">-- Select --</option>';
+
+      json.results
+        .filter(r => (r.media_type === "movie" || r.media_type === "tv") && r.poster_path)
+        .forEach(r => {
+          const name = r.title || r.name;
+          const year = (r.release_date || r.first_air_date || "").slice(0, 4);
+          const option = document.createElement("option");
+          option.value = `${r.id}|${r.media_type}`;
+          option.textContent = `${name} (${year})`;
+          select.appendChild(option);
+        });
+    }
+
+    document.getElementById("resultList").addEventListener("change", async function () {
+      const val = this.value;
+      if (!val) return;
+
+      const [id, type] = val.split("|");
+      const res = await fetch(`https://api.themoviedb.org/3/${type}/${id}?api_key=${TMDB_KEY}`);
+      const data = await res.json();
+
+      const poster = data.poster_path ? `https://image.tmdb.org/t/p/w500${data.poster_path}` : "";
+      const title = data.title || data.name || "";
+      const year = (data.release_date || data.first_air_date || "").slice(0, 4);
+      const mediaType = type.toUpperCase();
+
+      document.getElementById("title").value = title;
+      document.getElementById("year").value = year;
+      document.getElementById("type").value = mediaType;
+      document.getElementById("poster").value = poster;
+      document.getElementById("posterPreview").innerHTML = poster ? `<img src="${poster}" width="120"/>` : "";
+    });
+  </script>
+</body>
+</html>
