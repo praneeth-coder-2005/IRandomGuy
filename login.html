@@ -36,7 +36,7 @@
 <body>
   <div class="box">
     <h2>Admin Login</h2>
-    <input type="text" id="username" placeholder="Username" />
+    <input type="text" id="username" placeholder="Email" />
     <input type="password" id="password" placeholder="Password" />
     <button onclick="login()">Login</button>
     <p id="msg" style="color:red;"></p>
@@ -60,24 +60,18 @@
         return;
       }
 
-      const { data, error } = await supabase
-        .from('admins')
-        .select('*')
-        .eq('username', user)
-        .eq('password', pass);
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: user,
+        password: pass
+      });
 
       if (error) {
-        msgEl.innerText = "Supabase error: " + error.message;
-        console.error("Supabase error:", error);
+        msgEl.innerText = "Login failed: " + error.message;
         return;
       }
 
-      if (data && data.length === 1) {
-        localStorage.setItem("admin_login", "true");
-        location.href = "admin.html";
-      } else {
-        msgEl.innerText = "Invalid username or password.";
-      }
+      localStorage.setItem("admin_login", "true");
+      location.href = "admin.html";
     }
   </script>
 </body>
