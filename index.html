@@ -1,47 +1,43 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Troop Originals Auto-Slider</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <title>Troop Originals</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { background: #111; font-family: 'Segoe UI', sans-serif; color: #fff; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #111;
+      color: #fff;
+    }
 
     /* Header */
     .header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 10px 16px;
-      background-color: #111;
-      border-bottom: 1px solid #222;
+      padding: 12px 16px;
+      background-color: #000;
     }
-    .menu-icon {
-      width: 24px; height: 18px;
-      display: flex; flex-direction: column; justify-content: space-between;
-      cursor: pointer;
-    }
+    .menu-icon { width: 24px; cursor: pointer; }
     .menu-icon span {
-      height: 3px; background-color: white; border-radius: 2px;
+      display: block;
+      height: 3px; margin: 4px 0;
+      background: white; border-radius: 1px;
     }
     .logo {
       display: flex; align-items: center; gap: 8px;
     }
-    .logo img {
-      height: 32px;
-    }
-    .logo-text {
-      font-size: 16px; font-weight: bold; line-height: 1.2; text-align: center;
-    }
+    .logo img { height: 30px; }
+    .logo-text { font-weight: bold; font-size: 16px; line-height: 1.1; }
     .search-icon {
-      width: 24px; height: 24px; border: 2px solid white;
+      width: 22px; height: 22px; border: 2px solid #fff;
       border-radius: 50%; position: relative; cursor: pointer;
     }
     .search-icon::after {
       content: ''; position: absolute; bottom: -6px; right: -6px;
-      width: 10px; height: 2px; background: white;
-      transform: rotate(-45deg);
+      width: 10px; height: 2px; background: white; transform: rotate(-45deg);
     }
 
     /* Slider */
@@ -49,74 +45,106 @@
       overflow-x: scroll;
       scroll-snap-type: x mandatory;
       display: flex;
-      gap: 16px;
-      padding: 16px;
-      scroll-behavior: smooth;
+      padding: 10px 12px;
+      gap: 12px;
     }
-
     .slider-container::-webkit-scrollbar { display: none; }
 
     .slide {
       scroll-snap-align: center;
-      position: relative;
       min-width: 90%;
       border-radius: 8px;
       overflow: hidden;
-      flex-shrink: 0;
+      position: relative;
       cursor: pointer;
     }
-
     .slide img {
       width: 100%;
-      height: auto;
-      display: block;
+      border-radius: 8px;
     }
-
     .slide-title {
       position: absolute;
-      bottom: 40px;
-      left: 16px;
-      font-size: 18px;
+      bottom: 32px;
+      left: 14px;
+      font-size: 16px;
       font-weight: bold;
-      text-shadow: 1px 1px 3px #000;
+      text-shadow: 1px 1px 2px #000;
     }
-
     .slide-year {
       position: absolute;
-      bottom: 10px;
-      left: 16px;
-      font-size: 14px;
-      color: #ddd;
+      bottom: 12px;
+      left: 14px;
+      font-size: 13px;
+      color: #ccc;
     }
-
     .slide-tag {
       position: absolute;
-      bottom: 10px;
-      right: 16px;
+      bottom: 12px;
+      right: 14px;
       background-color: #1e88e5;
-      color: white;
-      padding: 4px 8px;
+      padding: 2px 8px;
       border-radius: 4px;
-      font-size: 12px;
+      font-size: 11px;
     }
 
     /* Dots */
     .dots {
       display: flex;
       justify-content: center;
-      gap: 8px;
-      margin: 8px 0 16px;
+      gap: 6px;
+      margin: 6px 0 16px;
     }
-
     .dot {
-      width: 10px;
-      height: 10px;
+      width: 8px; height: 8px;
       border-radius: 50%;
-      background: #444;
+      background: #555;
     }
-
     .dot.active {
       background: white;
+    }
+
+    /* Featured Titles */
+    .section-title {
+      font-size: 18px;
+      font-weight: bold;
+      margin: 0 16px 8px;
+      border-left: 3px solid #1e88e5;
+      padding-left: 8px;
+    }
+
+    .featured-row {
+      display: flex;
+      gap: 12px;
+      overflow-x: auto;
+      padding: 0 16px 16px;
+    }
+    .featured-row::-webkit-scrollbar { display: none; }
+
+    .featured-item {
+      flex-shrink: 0;
+      width: 110px;
+      position: relative;
+    }
+    .featured-item img {
+      width: 100%;
+      border-radius: 8px;
+    }
+    .featured-label {
+      position: absolute;
+      top: 5px;
+      left: 5px;
+      background-color: green;
+      color: white;
+      font-size: 10px;
+      padding: 2px 5px;
+      border-radius: 3px;
+    }
+    .featured-name {
+      font-size: 12px;
+      font-weight: 500;
+      margin-top: 4px;
+      color: #ddd;
+      font-style: italic;
     }
   </style>
 </head>
@@ -124,9 +152,11 @@
 
   <!-- Header -->
   <div class="header">
-    <div class="menu-icon"><span></span><span></span><span></span></div>
+    <div class="menu-icon">
+      <span></span><span></span><span></span>
+    </div>
     <div class="logo">
-      <img src="https://i.postimg.cc/G2wXkG7f/troop-t-logo.png" alt="T Logo" />
+      <img src="https://i.postimg.cc/G2wXkG7f/troop-t-logo.png" />
       <div class="logo-text">
         <div>TROOP</div><div>ORIGINALS</div>
       </div>
@@ -136,31 +166,44 @@
 
   <!-- Slider -->
   <div class="slider-container" id="slider">
-    <div class="slide" data-video="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4">
+    <div class="slide">
       <img src="https://image.tmdb.org/t/p/w500/8kpJ8DqHcREvumeWpMjJcsPMgVA.jpg" />
-      <div class="slide-title">LILO & STITCH (2025)</div>
-      <div class="slide-year">2025</div>
-      <div class="slide-tag">MOVIE</div>
-    </div>
-    <div class="slide" data-video="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4">
-      <img src="https://image.tmdb.org/t/p/w500/t5zCBSB5xMDKcDqe91qahCOUYVV.jpg" />
       <div class="slide-title">FURIOSA: A MAD MAX SAGA</div>
       <div class="slide-year">2024</div>
       <div class="slide-tag">MOVIE</div>
     </div>
-    <div class="slide" data-video="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4">
-      <img src="https://image.tmdb.org/t/p/w500/hMgvZId0Fxgd8IbH43vR61uBPJ8.jpg" />
-      <div class="slide-title">KUNG FU PANDA 4</div>
-      <div class="slide-year">2024</div>
-      <div class="slide-tag">ANIME</div>
+    <div class="slide">
+      <img src="https://image.tmdb.org/t/p/w500/t5zCBSB5xMDKcDqe91qahCOUYVV.jpg" />
+      <div class="slide-title">SERIAL EXPERIMENTS LAIN</div>
+      <div class="slide-year">1998</div>
+      <div class="slide-tag">TV</div>
     </div>
   </div>
 
-  <!-- Dot Navigation -->
+  <!-- Dots -->
   <div class="dots" id="dots">
     <div class="dot active"></div>
     <div class="dot"></div>
-    <div class="dot"></div>
+  </div>
+
+  <!-- Featured Titles -->
+  <div class="section-title">Featured titles</div>
+  <div class="featured-row">
+    <div class="featured-item">
+      <img src="https://image.tmdb.org/t/p/w500/a4Z6fNse5WbiKXc2gErlKvKMCXV.jpg" />
+      <div class="featured-label">FEATURED</div>
+      <div class="featured-name">Kuberaa (2025)</div>
+    </div>
+    <div class="featured-item">
+      <img src="https://image.tmdb.org/t/p/w500/wzJAk5wnFkrb7zIguMLPnVft9E8.jpg" />
+      <div class="featured-label">FEATURED</div>
+      <div class="featured-name">Blind Spot (2025)</div>
+    </div>
+    <div class="featured-item">
+      <img src="https://image.tmdb.org/t/p/w500/vBZ0qvaRxqEhZwl6LWmruJqWE8Z.jpg" />
+      <div class="featured-label">FEATURED</div>
+      <div class="featured-name">Devil's Double Next Level</div>
+    </div>
   </div>
 
   <script>
@@ -177,36 +220,27 @@
     }
 
     function goToSlide(index) {
-      const slideWidth = slides[0].offsetWidth + 16;
+      const slideWidth = slides[0].offsetWidth + 12;
       slider.scrollLeft = slideWidth * index;
       updateDots(index);
       currentIndex = index;
     }
 
-    // Auto-slide every 5 seconds
+    // Auto Slide every 5 seconds
     setInterval(() => {
       currentIndex = (currentIndex + 1) % slides.length;
       goToSlide(currentIndex);
     }, 5000);
 
-    // Scroll watcher
     slider.addEventListener('scroll', () => {
-      const slideWidth = slides[0].offsetWidth + 16;
+      const slideWidth = slides[0].offsetWidth + 12;
       const index = Math.round(slider.scrollLeft / slideWidth);
       if (index !== currentIndex) {
         updateDots(index);
         currentIndex = index;
       }
     });
-
-    // Click handler to open player
-    slides.forEach(slide => {
-      slide.addEventListener('click', () => {
-        const videoUrl = slide.getAttribute('data-video');
-        window.location.href = `player.html?video=${encodeURIComponent(videoUrl)}`;
-      });
-    });
   </script>
 
 </body>
-                                    </html>
+</html>
