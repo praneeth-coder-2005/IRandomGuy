@@ -8,43 +8,70 @@
   <style>
     body {
       margin: 0;
-      background: black;
+      background: #111;
       color: white;
       font-family: sans-serif;
     }
-    #my-video1 {
-      width: 100vw;
-      height: 100vh;
-    }
     .nav {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      z-index: 1000;
       display: flex;
-      gap: 10px;
+      justify-content: space-between;
+      align-items: center;
+      background: #000;
+      padding: 10px 15px;
+      position: sticky;
+      top: 0;
+      z-index: 999;
     }
     .nav button {
-      background: rgba(0,0,0,0.6);
+      background: rgba(255,255,255,0.1);
       color: white;
-      padding: 8px 12px;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .nav h2 {
+      font-size: 16px;
+      margin: 0;
+      flex: 1;
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    #my-video1 {
+      width: 100vw;
+      max-height: 56.25vw; /* 16:9 aspect ratio */
+    }
+    .info {
+      padding: 15px;
+    }
+    .info h3 {
+      margin-top: 0;
+      font-size: 18px;
+    }
+    .info .section {
+      margin-bottom: 20px;
+    }
+    .info .label {
+      font-weight: bold;
+      color: #1e88e5;
+    }
+    .info .text {
+      margin-top: 5px;
+      font-size: 15px;
+      line-height: 1.5;
+    }
+    .share-btn {
+      background: #1e88e5;
+      color: white;
+      padding: 8px 14px;
       border: none;
       border-radius: 5px;
       font-size: 14px;
       cursor: pointer;
-    }
-    .title-bar {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      background: rgba(0, 0, 0, 0.5);
-      padding: 8px 14px;
-      border-radius: 5px;
-      font-size: 15px;
-      font-weight: bold;
-      max-width: 60vw;
-      text-align: right;
-      z-index: 1000;
+      margin-top: 10px;
     }
   </style>
 </head>
@@ -52,35 +79,66 @@
 
 <div class="nav">
   <button onclick="history.back()">⬅ Back</button>
+  <h2 id="pageTitle">Now Playing</h2>
   <button onclick="location.href='index.html'">🏠 Home</button>
 </div>
 
-<div class="title-bar" id="movieTitle"></div>
-
 <div id="my-video1"></div>
+
+<div class="info">
+  <div class="section">
+    <div class="label">Description</div>
+    <div class="text" id="descText">No description provided.</div>
+  </div>
+  <div class="section">
+    <div class="label">Cast & Crew</div>
+    <div class="text" id="castText">Not available</div>
+  </div>
+  <div class="section">
+    <div class="label">Year / Type</div>
+    <div class="text" id="yearTypeText">-</div>
+  </div>
+  <button class="share-btn" onclick="copyLink()">🔗 Share This Movie</button>
+</div>
 
 <script>
   const params = new URLSearchParams(location.search);
-  const videoUrl = params.get("url");
+  const url = params.get("url");
   const title = params.get("title") || "Now Playing";
+  const desc = params.get("desc") || "";
+  const cast = params.get("cast") || "";
+  const year = params.get("year") || "";
+  const type = params.get("type") || "";
 
-  document.getElementById("movieTitle").innerText = decodeURIComponent(title);
+  document.getElementById("pageTitle").innerText = decodeURIComponent(title);
+  document.getElementById("descText").innerText = decodeURIComponent(desc);
+  document.getElementById("castText").innerText = decodeURIComponent(cast);
+  document.getElementById("yearTypeText").innerText = `${year} · ${type}`;
 
-  if (!videoUrl) {
+  if (!url) {
     alert("❌ No video URL provided.");
   } else {
-    jwplayer('my-video1').setup({
+    jwplayer("my-video1").setup({
       playlist: [{
         sources: [{
           default: true,
           type: "mp4",
-          file: decodeURIComponent(videoUrl),
+          file: decodeURIComponent(url),
           label: "HD"
         }]
       }],
       primary: "html5",
       hlshtml: true,
       autostart: false
+    });
+  }
+
+  function copyLink() {
+    const shareUrl = window.location.href;
+    navigator.clipboard.writeText(shareUrl).then(() => {
+      alert("🔗 Link copied to clipboard!");
+    }).catch(() => {
+      alert("❌ Could not copy link.");
     });
   }
 </script>
