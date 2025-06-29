@@ -164,8 +164,11 @@
 </div>
   <!-- Header -->
   <div class="header">
-    <div class="menu-icon">
-      <span></span><span></span><span></span>
+    <div class="menu-icon" onclick="toggleMenu()">
+  <span></span><span></span><span></span>
+  <div id="menu-popup" style="display:none; position:absolute; top:50px; left:10px; background:#222; padding:10px; border-radius:6px; z-index:100;">
+    <a href="login.html" style="color:#fff; text-decoration:none; display:block;">🔒 Admin Login</a>
+  </div>
     </div>
     <div class="logo">
       <img src="https://i.postimg.cc/G2wXkG7f/troop-t-logo.png" />
