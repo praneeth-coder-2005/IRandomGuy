@@ -68,10 +68,13 @@
 <body>
 
   <div class="header">
-    <div class="menu" onclick="location.href='login.html'">&#9776;</div>
-    <img src="https://i.imgur.com/dSU3Ysp.png" alt="Troop Originals">
-    <div class="search">&#128269;</div>
-  </div>
+  <div class="menu" onclick="location.href='login.html'">&#9776;</div>
+  <img src="https://i.imgur.com/dSU3Ysp.png" alt="Troop Originals">
+  <div class="search" onclick="toggleSearch()">&#128269;</div>
+</div>
+<div style="display:none; padding:10px;" id="searchBox">
+  <input type="text" id="searchInput" placeholder="Search titles..." style="width:100%;padding:10px;font-size:16px;border:none;border-radius:4px;">
+</div>
 
   <div class="swiper">
     <div class="swiper-wrapper" id="swiper-slides"></div>
@@ -132,6 +135,74 @@
       autoplay: { delay: 3000 },
       pagination: { el: ".swiper-pagination" }
     });
+   function renderAllMovies(movies) {
+  const grid = document.getElementById("grid-container");
+  grid.innerHTML = "";
+
+  movies.forEach(movie => {
+    const item = document.createElement("div");
+    item.className = "grid-card";
+    item.innerHTML = `
+      <img src="${movie.poster}" />
+      <div class="info">${movie.title} (${movie.year})</div>
+    `;
+    item.onclick = () => location.href = `player.html?url=${encodeURIComponent(movie.url)}`;
+    grid.appendChild(item);
+  });
+}
+
+function loadMovies() {
+  const movies = JSON.parse(localStorage.getItem("movies") || "[]");
+
+  // Slider
+  const swiperWrapper = document.getElementById("swiper-slides");
+  swiperWrapper.innerHTML = "";
+  const featuredRow = document.getElementById("featured-row");
+  featuredRow.innerHTML = "";
+
+  movies.forEach(movie => {
+    const slide = document.createElement("div");
+    slide.className = "swiper-slide";
+    slide.innerHTML = `
+      <img src="${movie.poster}" />
+      <div class="slide-title">${movie.title}</div>
+      <div class="slide-year">${movie.year}</div>
+      <div class="slide-type">${movie.type}</div>
+    `;
+    slide.onclick = () => location.href = `player.html?url=${encodeURIComponent(movie.url)}`;
+    swiperWrapper.appendChild(slide);
+
+    const card = document.createElement("div");
+    card.className = "featured-card";
+    card.innerHTML = `
+      <img src="${movie.poster}" />
+      <div class="featured-badge">FEATURED</div>
+      <div class="featured-title">${movie.title} (${movie.year})</div>
+    `;
+    card.onclick = () => location.href = `player.html?url=${encodeURIComponent(movie.url)}`;
+    featuredRow.appendChild(card);
+  });
+
+  renderAllMovies(movies);
+
+  new Swiper(".swiper", {
+    loop: true,
+    autoplay: { delay: 3000 },
+    pagination: { el: ".swiper-pagination" }
+  });
+
+  // 🔍 Filter logic
+  document.getElementById("searchInput").addEventListener("input", function () {
+    const keyword = this.value.toLowerCase();
+    const filtered = movies.filter(m => m.title.toLowerCase().includes(keyword));
+    renderAllMovies(filtered);
+  });
+}
+
+function toggleSearch() {
+  const box = document.getElementById("searchBox");
+  box.style.display = box.style.display === "none" ? "block" : "none";
+        } 
   </script>
 </body>
 </html>
