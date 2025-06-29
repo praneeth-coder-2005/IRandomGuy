@@ -1,108 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Admin Panel</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
-    body {
-      background: #111;
-      color: #fff;
-      font-family: sans-serif;
-      padding: 20px;
-    }
-    header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 20px;
-    }
-    header h2 {
-      margin: 0;
-    }
+    body { background: #111; color: #fff; font-family: sans-serif; padding: 20px; }
+    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    header h2 { margin: 0; }
     header button {
-      background: #1e88e5;
-      border: none;
-      color: white;
-      padding: 8px 12px;
-      border-radius: 4px;
-      cursor: pointer;
+      background: #1e88e5; border: none; color: white; padding: 8px 12px;
+      border-radius: 4px; cursor: pointer;
     }
-    label {
-      display: block;
-      margin-top: 12px;
-      font-weight: bold;
-    }
+    label { display: block; margin-top: 12px; font-weight: bold; }
     input, select, button.add {
-      width: 100%;
-      margin-top: 6px;
-      padding: 10px;
-      border: none;
-      border-radius: 4px;
-      background: #222;
-      color: white;
-      font-size: 14px;
-      box-sizing: border-box;
+      width: 100%; margin-top: 6px; padding: 10px;
+      border: none; border-radius: 4px; background: #222;
+      color: white; font-size: 14px; box-sizing: border-box;
     }
-    button.add {
-      background: #43a047;
-      margin-top: 16px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    .logout {
-      background: #e53935 !important;
-      margin-top: 0;
-      width: auto;
-      padding: 8px 12px;
-    }
-    .preview {
-      margin-top: 30px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-    }
+    button.add { background: #43a047; margin-top: 16px; font-weight: bold; cursor: pointer; }
+    .logout { background: #e53935 !important; width: auto; padding: 8px 12px; }
+    .preview { margin-top: 30px; display: flex; flex-wrap: wrap; gap: 12px; }
     .card {
-      position: relative;
-      width: 140px;
-      background: #222;
-      border-radius: 6px;
-      overflow: hidden;
-      text-align: center;
+      position: relative; width: 140px; background: #222; border-radius: 6px;
+      overflow: hidden; text-align: center;
     }
-    .card img {
-      width: 100%;
-      height: auto;
-      display: block;
-    }
-    .card-title {
-      padding: 8px;
-      font-size: 13px;
-    }
+    .card img { width: 100%; height: auto; }
+    .card-title { padding: 8px; font-size: 13px; }
     .action {
-      position: absolute;
-      top: 4px;
-      font-size: 12px;
-      padding: 2px 6px;
-      border-radius: 4px;
-      cursor: pointer;
+      position: absolute; top: 4px; font-size: 12px;
+      padding: 2px 6px; border-radius: 4px; cursor: pointer;
     }
-    .delete {
-      right: 4px;
-      background: rgba(229,57,53,0.8);
-    }
-    .edit {
-      right: 28px;
-      background: rgba(251,192,45,0.8);
-    }
-    .thumbnail-preview {
-      margin-top: 10px;
-      text-align: center;
-    }
-    .thumbnail-preview img {
-      max-width: 150px;
-      border-radius: 6px;
-    }
+    .delete { right: 4px; background: rgba(229,57,53,0.8); }
+    .edit { right: 28px; background: rgba(251,192,45,0.8); }
+    .thumbnail-preview { margin-top: 10px; text-align: center; }
+    .thumbnail-preview img { max-width: 150px; border-radius: 6px; }
   </style>
 </head>
 <body>
@@ -116,7 +48,7 @@
   </header>
 
   <label>Search Movie Title</label>
-  <input id="searchInput" type="text" placeholder="e.g. RRR" oninput="clearForm()" />
+  <input id="searchInput" type="text" placeholder="e.g. RRR" />
   <button onclick="searchTMDB()">Search TMDb</button>
 
   <label>Select Result</label>
@@ -131,7 +63,6 @@
   <label>Video URL</label><input id="url" placeholder="https://your.video/file.mp4" />
 
   <div class="thumbnail-preview" id="posterPreview"></div>
-
   <button class="add" onclick="addMovie()">Add / Update Movie</button>
 
   <h3>🗂️ Preview Added Movies:</h3>
@@ -156,25 +87,17 @@
       goHome();
     }
 
-    function clearForm() {
-      document.getElementById('resultList').innerHTML = '<option value="">-- No results --</option>';
-      ['poster','title','year','type','url'].forEach(id => document.getElementById(id).value = '');
-      document.getElementById('posterPreview').innerHTML = '';
-      editingMovieId = null;
-    }
-
     async function searchTMDB() {
       const query = document.getElementById("searchInput").value.trim();
-      if (!query) return alert("Enter a title first.");
+      const select = document.getElementById("resultList");
+      select.innerHTML = `<option value="">Loading...</option>`;
 
       const res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${TMDB_KEY}&query=${encodeURIComponent(query)}`);
-      const json = await res.json();
+      const data = await res.json();
 
-      const select = document.getElementById("resultList");
-      select.innerHTML = '<option value="">-- Select movie/show --</option>';
-
-      json.results
-        .filter(item => (item.media_type === 'movie' || item.media_type === 'tv') && item.poster_path)
+      select.innerHTML = `<option value="">-- Select --</option>`;
+      data.results
+        .filter(item => ['movie', 'tv'].includes(item.media_type) && item.poster_path)
         .forEach(item => {
           const name = item.title || item.name;
           const year = (item.release_date || item.first_air_date || '').slice(0, 4);
@@ -183,7 +106,7 @@
         });
     }
 
-    document.getElementById("resultList").onchange = async function () {
+    document.getElementById("resultList").addEventListener("change", async function () {
       const val = this.value;
       if (!val) return;
 
@@ -192,7 +115,7 @@
       const data = await res.json();
 
       const poster = data.poster_path ? `https://image.tmdb.org/t/p/w500${data.poster_path}` : "";
-      const title = data.title || data.name || "Untitled";
+      const title = data.title || data.name || "";
       const year = (data.release_date || data.first_air_date || "").slice(0, 4);
       const mediaType = type.toUpperCase();
 
@@ -200,17 +123,14 @@
       document.getElementById("title").value = title;
       document.getElementById("year").value = year;
       document.getElementById("type").value = mediaType;
-
-      document.getElementById("posterPreview").innerHTML = poster
-        ? `<img src="${poster}" alt="poster preview">`
-        : '';
-    };
+      document.getElementById("posterPreview").innerHTML = poster ? `<img src="${poster}" />` : '';
+    });
 
     async function loadPreview() {
       const { data, error } = await supabase.from("Movies").select("*").order("year", { descending: true });
       const out = document.getElementById("previewList");
       out.innerHTML = "";
-      if (error) return alert("Failed to load preview.");
+      if (error) return alert("Preview load error.");
 
       data.forEach(movie => {
         out.innerHTML += `
@@ -219,8 +139,7 @@
             <div class="card-title">${movie.title}</div>
             <div class="action delete" onclick="deleteMovie('${movie.id}')">❌</div>
             <div class="action edit" onclick="editMovie('${movie.id}')">✏️</div>
-          </div>
-        `;
+          </div>`;
       });
     }
 
@@ -233,16 +152,16 @@
         url: document.getElementById("url").value.trim()
       };
 
-      if (!movie.poster || !movie.title || !movie.url) return alert("Fill all required fields.");
+      if (!movie.poster || !movie.title || !movie.url) return alert("Fill all fields");
 
       if (editingMovieId) {
         const { error } = await supabase.from("Movies").update(movie).eq("id", editingMovieId);
-        if (error) return alert("Failed to update movie.");
-        alert("Movie updated.");
+        if (error) return alert("Update failed");
         editingMovieId = null;
+        alert("Movie updated.");
       } else {
         const { error } = await supabase.from("Movies").insert([movie]);
-        if (error) return alert("Failed to add movie.");
+        if (error) return alert("Add failed");
         alert("Movie added.");
       }
 
@@ -252,23 +171,26 @@
 
     async function deleteMovie(id) {
       if (!confirm("Delete this movie?")) return;
-      const { error } = await supabase.from("Movies").delete().eq("id", id);
-      if (!error) loadPreview();
+      await supabase.from("Movies").delete().eq("id", id);
+      loadPreview();
     }
 
     async function editMovie(id) {
-      const { data, error } = await supabase.from("Movies").select("*").eq("id", id).single();
-      if (error || !data) return alert("Failed to load movie.");
+      const { data } = await supabase.from("Movies").select("*").eq("id", id).single();
+      if (!data) return;
       document.getElementById("poster").value = data.poster;
       document.getElementById("title").value = data.title;
       document.getElementById("year").value = data.year;
       document.getElementById("type").value = data.type;
       document.getElementById("url").value = data.url;
-      document.getElementById("posterPreview").innerHTML = data.poster
-        ? `<img src="${data.poster}" alt="poster preview">`
-        : '';
+      document.getElementById("posterPreview").innerHTML = `<img src="${data.poster}" />`;
       editingMovieId = id;
-      alert("Editing — update the form and click Add / Update.");
+    }
+
+    function clearForm() {
+      ['poster','title','year','type','url'].forEach(id => document.getElementById(id).value = '');
+      document.getElementById("posterPreview").innerHTML = '';
+      editingMovieId = null;
     }
 
     loadPreview();
