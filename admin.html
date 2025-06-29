@@ -111,25 +111,43 @@
     }
 
     async function addMovie() {
-      const m = {
-        poster: poster.value,
-        title: title.value,
-        year: year.value,
-        type: type.value,
-        url: url.value.trim()
-      };
-      if (!m.poster || !m.title || !m.url) return alert("Fill all fields.");
+      const poster = document.getElementById("poster").value.trim();
+      const title = document.getElementById("title").value.trim();
+      const year = document.getElementById("year").value.trim();
+      const type = document.getElementById("type").value.trim();
+      const url = document.getElementById("url").value.trim();
 
-      if (editingMovieId) {
-        await supabase.from("Movies").update(m).eq("id", editingMovieId);
-        alert("Movie updated.");
-        editingMovieId = null;
-      } else {
-        await supabase.from("Movies").insert([m]);
-        alert("Movie added.");
+      if (!poster || !title || !url) {
+        alert("Please fill all fields.");
+        return;
       }
-      clearForm();
-      loadPreview();
+
+      const movie = { poster, title, year, type, url };
+
+      try {
+        let result;
+        if (editingMovieId) {
+          result = await supabase.from("Movies").update(movie).eq("id", editingMovieId);
+          alert("✅ Movie updated.");
+          editingMovieId = null;
+        } else {
+          result = await supabase.from("Movies").insert([movie]);
+          alert("✅ Movie added.");
+        }
+
+        if (result.error) {
+          console.error("Supabase error:", result.error.message);
+          alert("❌ Supabase error: " + result.error.message);
+          return;
+        }
+
+        clearForm();
+        loadPreview();
+
+      } catch (err) {
+        console.error("JS error:", err);
+        alert("❌ Something went wrong.");
+      }
     }
 
     async function deleteMovie(id) {
