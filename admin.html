@@ -1,169 +1,164 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
   <meta charset="UTF-8">
-  <title>Admin Panel (Local)</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin Panel</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
     body { background: #111; color: white; font-family: sans-serif; padding: 20px; }
     input, select, button {
-      width: 100%; margin-top: 10px; padding: 10px;
-      border: none; border-radius: 4px; background: #222;
-      color: white; font-size: 14px;
+      width: 100%; padding: 10px; margin-top: 10px;
+      background: #222; border: none; color: white; border-radius: 4px;
     }
-    button { font-weight: bold; cursor: pointer; }
-    .add { background: #43a047; }
-    .use { background: #2196F3; }
+    button.add { background: #43a047; margin-top: 15px; }
+    .poster-preview img { margin-top: 10px; max-width: 100px; border-radius: 6px; }
     .logout { background: #e53935; margin-top: 5px; }
-    .preview { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 20px; }
-    .card {
-      width: 140px; background: #222; border-radius: 6px; overflow: hidden;
-      text-align: center;
-    }
+    .preview { margin-top: 20px; display: flex; gap: 12px; flex-wrap: wrap; }
+    .card { width: 140px; background: #222; border-radius: 6px; overflow: hidden; text-align: center; }
     .card img { width: 100%; }
     .card-title { padding: 6px; font-size: 13px; }
-    .action { cursor: pointer; font-size: 18px; margin: 4px; display: inline-block; }
+    .action { margin: 4px; font-size: 18px; cursor: pointer; display: inline-block; }
     .edit { color: #ffc107; }
     .delete { color: #e53935; }
   </style>
 </head>
 <body>
 
-  <!-- Only the top header section changed -->
-<h2>🎬 Admin Panel (LocalStorage)</h2>
-<div style="display:flex; gap:10px;">
-  <button onclick="goHome()">🏠 Home</button>
-  <button onclick="logout()" class="logout">Logout</button>
-</div>
+<h2>🎬 Admin Panel</h2>
+<button onclick="goHome()">🏠 Home</button>
+<button class="logout" onclick="logout()">Logout</button>
+
+<input id="searchInput" placeholder="Search TMDb Title">
+<button onclick="searchTMDB()">Search TMDb</button>
+
+<select id="resultList"><option value="">-- Select Movie --</option></select>
+<button onclick="useSelected()">Use Selected</button>
+
+<input id="poster" placeholder="Poster URL" readonly>
+<input id="title" placeholder="Title" readonly>
+<input id="year" placeholder="Year" readonly>
+<input id="type" placeholder="Type (MOVIE/TV)" readonly>
+<input id="desc" placeholder="Description (overview)">
+<input id="cast" placeholder="Cast (comma-separated)">
+<input id="url" placeholder="Video URL (MP4)" />
+
+<div class="poster-preview" id="posterPreview"></div>
+<button class="add" onclick="addMovie()">Add / Update Movie</button>
+
+<h3>Preview</h3>
+<div class="preview" id="previewList"></div>
 
 <script>
+  const TMDB_KEY = "bb5f40c5be4b24660cbdc20c2409835e";
+  let editIndex = -1;
+
   function goHome() {
     location.href = "index.html";
   }
-</script>
-  <input id="searchInput" placeholder="Search Movie..." />
-  <button onclick="searchTMDB()">Search TMDb</button>
 
-  <select id="resultList"><option value="">-- Select Movie --</option></select>
-  <button class="use" onclick="useSelected()">Use Selected Movie</button>
+  function logout() {
+    localStorage.removeItem("admin_login");
+    goHome();
+  }
 
-  <input id="poster" placeholder="Poster URL" />
-  <input id="title" placeholder="Title" />
-  <input id="year" placeholder="Year" />
-  <input id="type" placeholder="Type (MOVIE/TV)" />
-  <input id="url" placeholder="Video URL" />
-
-  <div id="posterPreview" style="margin:10px 0"></div>
-
-  <button class="add" onclick="addMovie()">Add / Update Movie</button>
-
-  <h3>🗂 Preview</h3>
-  <div class="preview" id="previewList"></div>
-
-  <script>
-    let editIndex = -1;
-
-    function logout() {
-      localStorage.removeItem("admin_login");
-      location.href = "index.html";
-    }
-
-    async function searchTMDB() {
-      const query = document.getElementById("searchInput").value.trim();
-      if (!query) return alert("Enter a title.");
-
-      const res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=bb5f40c5be4b24660cbdc20c2409835e&query=${encodeURIComponent(query)}`);
-      const json = await res.json();
-
-      const list = document.getElementById("resultList");
-      list.innerHTML = '<option value="">-- Select --</option>';
-
-      json.results.filter(r => (r.poster_path && (r.title || r.name))).forEach(r => {
-        const label = (r.title || r.name) + " (" + ((r.release_date || r.first_air_date || "").slice(0, 4)) + ")";
-        list.innerHTML += `<option value="${r.id}|${r.media_type}">${label}</option>`;
+  async function searchTMDB() {
+    const q = searchInput.value.trim();
+    if (!q) return alert("Enter a title.");
+    const res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${TMDB_KEY}&query=${encodeURIComponent(q)}`);
+    const json = await res.json();
+    resultList.innerHTML = '<option value="">-- Select --</option>';
+    json.results
+      .filter(r => r.poster_path && (r.title || r.name))
+      .forEach(r => {
+        const label = (r.title || r.name) + " (" + ((r.release_date || r.first_air_date || "").slice(0,4)) + ")";
+        resultList.innerHTML += `<option value="${r.id}|${r.media_type}">${label}</option>`;
       });
-    }
+  }
 
-    async function useSelected() {
-      const val = document.getElementById("resultList").value;
-      if (!val) return;
-      const [id, type] = val.split("|");
+  async function useSelected() {
+    const val = resultList.value;
+    if (!val) return;
+    const [id, type] = val.split("|");
 
-      const res = await fetch(`https://api.themoviedb.org/3/${type}/${id}?api_key=bb5f40c5be4b24660cbdc20c2409835e`);
-      const data = await res.json();
+    const detailsRes = await fetch(`https://api.themoviedb.org/3/${type}/${id}?api_key=${TMDB_KEY}`);
+    const details = await detailsRes.json();
 
-      document.getElementById("poster").value = "https://image.tmdb.org/t/p/w500" + data.poster_path;
-      document.getElementById("title").value = data.title || data.name;
-      document.getElementById("year").value = (data.release_date || data.first_air_date || "").slice(0, 4);
-      document.getElementById("type").value = type.toUpperCase();
-      document.getElementById("posterPreview").innerHTML = `<img src="https://image.tmdb.org/t/p/w300${data.poster_path}" width="100">`;
-    }
+    const creditsRes = await fetch(`https://api.themoviedb.org/3/${type}/${id}/credits?api_key=${TMDB_KEY}`);
+    const credits = await creditsRes.json();
 
-    function addMovie() {
-      const movie = {
-        poster: poster.value.trim(),
-        title: title.value.trim(),
-        year: year.value.trim(),
-        type: type.value.trim(),
-        url: url.value.trim()
-      };
+    poster.value = "https://image.tmdb.org/t/p/w500" + details.poster_path;
+    title.value = details.title || details.name || "";
+    year.value = (details.release_date || details.first_air_date || "").slice(0,4);
+    type.value = type.toUpperCase();
+    desc.value = details.overview || "";
+    cast.value = credits.cast.slice(0,5).map(p => p.name).join(", ");
+    posterPreview.innerHTML = `<img src="${poster.value}" width="100">`;
+  }
 
-      if (!movie.poster || !movie.title || !movie.url) return alert("Fill poster, title, and url");
+  function addMovie() {
+    const m = {
+      poster: poster.value.trim(),
+      title: title.value.trim(),
+      year: year.value.trim(),
+      type: type.value.trim(),
+      url: url.value.trim(),
+      desc: desc.value.trim(),
+      cast: cast.value.trim()
+    };
+    if (!m.poster || !m.title || !m.url) return alert("Poster, title, and URL required.");
 
-      const movies = JSON.parse(localStorage.getItem("movies") || "[]");
-
-      if (editIndex >= 0) {
-        movies[editIndex] = movie;
-        editIndex = -1;
-      } else {
-        movies.push(movie);
-      }
-
-      localStorage.setItem("movies", JSON.stringify(movies));
-      alert("Movie saved!");
-      clearForm();
-      loadPreview();
-    }
-
-    function clearForm() {
-      ['poster','title','year','type','url'].forEach(id => document.getElementById(id).value = '');
-      document.getElementById("posterPreview").innerHTML = '';
+    const movies = JSON.parse(localStorage.getItem("movies") || "[]");
+    if (editIndex >= 0) {
+      movies[editIndex] = m;
       editIndex = -1;
+    } else {
+      movies.push(m);
     }
-
-    function deleteMovie(i) {
-      if (!confirm("Delete this movie?")) return;
-      const movies = JSON.parse(localStorage.getItem("movies") || "[]");
-      movies.splice(i, 1);
-      localStorage.setItem("movies", JSON.stringify(movies));
-      loadPreview();
-    }
-
-    function editMovie(i) {
-      const movie = JSON.parse(localStorage.getItem("movies") || "[]")[i];
-      ['poster','title','year','type','url'].forEach(id => document.getElementById(id).value = movie[id]);
-      document.getElementById("posterPreview").innerHTML = `<img src="${movie.poster}" width="100">`;
-      editIndex = i;
-    }
-
-    function loadPreview() {
-      const list = JSON.parse(localStorage.getItem("movies") || "[]");
-      const out = document.getElementById("previewList");
-      out.innerHTML = '';
-      list.forEach((m, i) => {
-        out.innerHTML += `
-          <div class="card">
-            <img src="${m.poster}" />
-            <div class="card-title">${m.title}</div>
-            <div>
-              <span class="action edit" onclick="editMovie(${i})">✏️</span>
-              <span class="action delete" onclick="deleteMovie(${i})">❌</span>
-            </div>
-          </div>`;
-      });
-    }
-
+    localStorage.setItem("movies", JSON.stringify(movies));
+    alert("Movie saved.");
+    clearForm();
     loadPreview();
-  </script>
+  }
+
+  function clearForm() {
+    ['poster','title','year','type','url','desc','cast'].forEach(id => document.getElementById(id).value = '');
+    posterPreview.innerHTML = '';
+    editIndex = -1;
+  }
+
+  function deleteMovie(i) {
+    if (!confirm("Delete?")) return;
+    const movies = JSON.parse(localStorage.getItem("movies") || "[]");
+    movies.splice(i, 1);
+    localStorage.setItem("movies", JSON.stringify(movies));
+    loadPreview();
+  }
+
+  function editMovie(i) {
+    const m = JSON.parse(localStorage.getItem("movies") || "[]")[i];
+    ['poster','title','year','type','url','desc','cast'].forEach(id => document.getElementById(id).value = m[id]);
+    posterPreview.innerHTML = `<img src="${m.poster}" width="100">`;
+    editIndex = i;
+  }
+
+  function loadPreview() {
+    const list = JSON.parse(localStorage.getItem("movies") || "[]");
+    const out = document.getElementById("previewList");
+    out.innerHTML = '';
+    list.forEach((m, i) => {
+      out.innerHTML += `
+        <div class="card">
+          <img src="${m.poster}" />
+          <div class="card-title">${m.title}</div>
+          <div>
+            <span class="action edit" onclick="editMovie(${i})">✏️</span>
+            <span class="action delete" onclick="deleteMovie(${i})">❌</span>
+          </div>
+        </div>`;
+    });
+  }
+
+  loadPreview();
+</script>
 </body>
 </html>
