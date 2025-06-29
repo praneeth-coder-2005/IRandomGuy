@@ -95,6 +95,14 @@
       right: 28px;
       background: rgba(251,192,45,0.8);
     }
+    .thumbnail-preview {
+      margin-top: 10px;
+      text-align: center;
+    }
+    .thumbnail-preview img {
+      max-width: 150px;
+      border-radius: 6px;
+    }
   </style>
 </head>
 <body>
@@ -121,6 +129,9 @@
   <label>Year</label><input id="year" readonly />
   <label>Type</label><input id="type" readonly />
   <label>Video URL</label><input id="url" placeholder="https://your.video/file.mp4" />
+
+  <div class="thumbnail-preview" id="posterPreview"></div>
+
   <button class="add" onclick="addMovie()">Add / Update Movie</button>
 
   <h3>🗂️ Preview Added Movies:</h3>
@@ -148,6 +159,7 @@
     function clearForm() {
       document.getElementById('resultList').innerHTML = '<option value="">-- No results --</option>';
       ['poster','title','year','type','url'].forEach(id => document.getElementById(id).value = '');
+      document.getElementById('posterPreview').innerHTML = '';
       editingMovieId = null;
     }
 
@@ -155,12 +167,9 @@
       const query = document.getElementById("searchInput").value.trim();
       if (!query) return alert("Please enter a movie name.");
 
-      console.log("🔎 Searching TMDb for:", query);
-
       try {
         const res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${TMDB_KEY}&query=${encodeURIComponent(query)}`);
         const json = await res.json();
-        console.log("📦 TMDb response:", json);
 
         const select = document.getElementById("resultList");
         select.innerHTML = '<option value="">-- Select movie/show --</option>';
@@ -175,8 +184,7 @@
             select.innerHTML += `<option value="${value}">${label} (${year})</option>`;
           });
       } catch (err) {
-        console.error("❌ TMDb fetch error:", err);
-        alert("Failed to fetch results from TMDb.");
+        alert("Failed to fetch from TMDb.");
       }
     }
 
@@ -190,10 +198,11 @@
         const res = await fetch(`https://api.themoviedb.org/3/${type}/${id}?api_key=${TMDB_KEY}`);
         const data = await res.json();
 
-        console.log("🎯 TMDb selected item details:", data);
+        const poster = data.poster_path
+          ? `https://image.tmdb.org/t/p/w500${data.poster_path}`
+          : "";
 
-        const poster = data.poster_path ? `https://image.tmdb.org/t/p/w500${data.poster_path}` : "";
-        const title = data.title || data.name || "";
+        const title = data.title || data.name || "Untitled";
         const year = (data.release_date || data.first_air_date || "").slice(0, 4);
         const mediaType = type.toUpperCase();
 
@@ -201,8 +210,12 @@
         document.getElementById("title").value = title;
         document.getElementById("year").value = year;
         document.getElementById("type").value = mediaType;
+
+        document.getElementById("posterPreview").innerHTML = poster
+          ? `<img src="${poster}" alt="poster preview">`
+          : '';
+
       } catch (err) {
-        console.error("❌ Failed to load TMDb details:", err);
         alert("Error loading movie details from TMDb.");
       }
     };
@@ -265,6 +278,9 @@
       document.getElementById("year").value = data.year;
       document.getElementById("type").value = data.type;
       document.getElementById("url").value = data.url;
+      document.getElementById("posterPreview").innerHTML = data.poster
+        ? `<img src="${data.poster}" alt="poster preview">`
+        : '';
       editingMovieId = id;
       alert("Editing — update the form and click Add / Update.");
     }
