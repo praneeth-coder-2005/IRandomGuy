@@ -192,6 +192,17 @@
       autoplay: { delay: 3000 },
       pagination: { el: '.swiper-pagination' }
     });
+    // Existing Swiper and render logic...
+new Swiper('.swiper', {
+  loop: true,
+  autoplay: { delay: 3000 },
+  pagination: { el: '.swiper-pagination' }
+});
+
+// 👇 Add this to make ☰ menu go to admin login
+document.querySelector(".menu").onclick = () => {
+  window.location.href = "login.html";
+};
   </script>
 
 </body>
