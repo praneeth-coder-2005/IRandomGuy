@@ -1,95 +1,235 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
   <title>Admin Panel</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      background: #111;
+      color: #fff;
+      font-family: sans-serif;
+      padding: 20px;
+    }
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    header h2 {
+      margin: 0;
+    }
+    header button {
+      background: #1e88e5;
+      border: none;
+      color: white;
+      padding: 8px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    label {
+      display: block;
+      margin-top: 12px;
+      font-weight: bold;
+    }
+    input, select, button.add {
+      width: 100%;
+      margin-top: 6px;
+      padding: 10px;
+      border: none;
+      border-radius: 4px;
+      background: #222;
+      color: white;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+    button.add {
+      background: #43a047;
+      margin-top: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .logout {
+      background: #e53935 !important;
+      margin-top: 0;
+      width: auto;
+      padding: 8px 12px;
+    }
+    .preview {
+      margin-top: 30px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .card {
+      position: relative;
+      width: 140px;
+      background: #222;
+      border-radius: 6px;
+      overflow: hidden;
+      text-align: center;
+    }
+    .card img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+    .card-title {
+      padding: 8px;
+      font-size: 13px;
+    }
+    .action {
+      position: absolute;
+      top: 4px;
+      font-size: 12px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .delete {
+      right: 4px;
+      background: rgba(229,57,53,0.8);
+    }
+    .edit {
+      right: 28px;
+      background: rgba(251,192,45,0.8);
+    }
+  </style>
 </head>
 <body>
-  <header style="padding: 10px;">
-    <button onclick="window.location.href='index.html'" style="background:#444; color:white; padding:6px 12px; border:none; border-radius:6px;">← Back to Home</button>
+
+  <header>
+    <h2>🎬 Troop Admin Panel</h2>
+    <div>
+      <button onclick="goHome()">Back</button>
+      <button class="logout" onclick="logout()">Logout</button>
+    </div>
   </header>
 
-  <div class="container">
-    <h1>Admin Panel</h1>
+  <label>Search Movie Title</label>
+  <input id="searchInput" type="text" placeholder="e.g. RRR" oninput="clearForm()" />
 
-    <input type="text" id="searchTitle" placeholder="Search Movie Title" />
-    <button onclick="searchTMDb()">Search TMDb</button>
-    
-    <label>Select Result</label>
-    <select id="searchResults" onchange="fillMovieFields()"></select>
+  <button onclick="searchTMDB()">Search TMDb</button>
 
-    <input type="text" id="poster" placeholder="Poster" />
-    <input type="text" id="title" placeholder="Title" />
-    <input type="text" id="year" placeholder="Year" />
-    <input type="text" id="type" placeholder="Type" />
-    <input type="text" id="videoUrl" placeholder="Video URL" />
+  <label>Select Result</label>
+  <select id="resultList">
+    <option value="">-- No results --</option>
+  </select>
 
-    <button onclick="addMovie()">Add / Update Movie</button>
+  <label>Poster</label><input id="poster" readonly />
+  <label>Title</label><input id="title" readonly />
+  <label>Year</label><input id="year" readonly />
+  <label>Type</label><input id="type" readonly />
 
-    <h2>📁 Preview Added Movies:</h2>
-    <div id="preview"></div>
-  </div>
+  <label>Video URL</label><input id="url" placeholder="https://your.video/file.mp4" />
+
+  <button class="add" onclick="addMovie()">Add / Update Movie</button>
+
+  <h3>🗂️ Preview Added Movies:</h3>
+  <div class="preview" id="previewList"></div>
 
   <script>
-    const API_KEY = "e2d4d607b8c4d17dc47e61cc00b48837"; // Replace with your actual TMDb key
-    let movieData = [];
+    const TMDB_KEY = "YOUR_TMDB_API_KEY"; // ← Replace with your key
+    let editIndex = -1;
 
-    function searchTMDb() {
-      const query = document.getElementById("searchTitle").value;
-      fetch(`https://api.themoviedb.org/3/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(query)}`)
-        .then(res => res.json())
-        .then(data => {
-          movieData = data.results;
-          const select = document.getElementById("searchResults");
-          select.innerHTML = movieData.map((m, i) => `<option value="${i}">${m.title}</option>`).join("");
-        });
+    function goHome() {
+      window.location.href = "index.html";
     }
 
-    function fillMovieFields() {
-      const index = document.getElementById("searchResults").value;
-      const selected = movieData[index];
-      document.getElementById("poster").value = "https://image.tmdb.org/t/p/w500" + selected.poster_path;
-      document.getElementById("title").value = selected.title;
-      document.getElementById("year").value = (selected.release_date || "").split("-")[0];
-      document.getElementById("type").value = "movie";
+    function logout() {
+      localStorage.removeItem("admin_login");
+      goHome();
+    }
+
+    function clearForm() {
+      document.getElementById('resultList').innerHTML = '<option value="">-- No results --</option>';
+      ['poster','title','year','type','url'].forEach(id => document.getElementById(id).value = '');
+      editIndex = -1;
+    }
+
+    async function searchTMDB() {
+      const q = document.getElementById("searchInput").value.trim();
+      if (!q) return alert("Please enter a movie name to search.");
+      const res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${TMDB_KEY}&query=${encodeURIComponent(q)}`);
+      const json = await res.json();
+      const sel = document.getElementById("resultList");
+      sel.innerHTML = '<option value="">-- Select movie/show --</option>';
+      json.results.filter(r => r.poster_path).forEach(r => {
+        const label = r.title || r.name;
+        sel.innerHTML += `<option value="${r.id}|${r.media_type}">${label} (${(r.release_date||r.first_air_date||"").slice(0,4)})</option>`;
+      });
+    }
+
+    document.getElementById("resultList").onchange = async function() {
+      const val = this.value;
+      if (!val) return;
+      const [id,type] = val.split("|");
+      const res = await fetch(`https://api.themoviedb.org/3/${type}/${id}?api_key=${TMDB_KEY}`);
+      const data = await res.json();
+      document.getElementById("poster").value = `https://image.tmdb.org/t/p/w500${data.poster_path}`;
+      document.getElementById("title").value  = data.title || data.name;
+      document.getElementById("year").value   = (data.release_date||data.first_air_date||"").slice(0,4);
+      document.getElementById("type").value   = type.toUpperCase();
+    };
+
+    function loadPreview() {
+      const list = JSON.parse(localStorage.getItem("movies") || "[]");
+      const out = document.getElementById("previewList");
+      out.innerHTML = "";
+      list.forEach((movie,i) => {
+        out.innerHTML += `
+          <div class="card">
+            <img src="${movie.poster}" alt="" />
+            <div class="card-title">${movie.title}</div>
+            <div class="action delete" onclick="deleteMovie(${i})">❌</div>
+            <div class="action edit"   onclick="editMovie(${i})">✏️</div>
+          </div>`;
+      });
     }
 
     function addMovie() {
-      const movie = {
-        title: document.getElementById("title").value,
-        year: document.getElementById("year").value,
-        type: document.getElementById("type").value,
+      const m = {
         poster: document.getElementById("poster").value,
-        videoUrl: document.getElementById("videoUrl").value
+        title:  document.getElementById("title").value,
+        year:   document.getElementById("year").value,
+        type:   document.getElementById("type").value,
+        url:    document.getElementById("url").value.trim()
       };
-
-      const movies = JSON.parse(localStorage.getItem("movies") || "[]");
-      const exists = movies.findIndex(m => m.title === movie.title);
-      if (exists !== -1) {
-        movies[exists] = movie;
+      if (!m.poster || !m.title || !m.url) return alert("Complete the form before adding.");
+      const arr = JSON.parse(localStorage.getItem("movies") || "[]");
+      if (editIndex >= 0) {
+        arr[editIndex] = m;
+        editIndex = -1;
       } else {
-        movies.push(movie);
+        arr.push(m);
       }
-
-      localStorage.setItem("movies", JSON.stringify(movies));
-      showPreview();
+      localStorage.setItem("movies", JSON.stringify(arr));
+      alert("Movie saved!");
+      clearForm();
+      loadPreview();
     }
 
-    function showPreview() {
-      const preview = document.getElementById("preview");
-      const movies = JSON.parse(localStorage.getItem("movies") || "[]");
-      preview.innerHTML = movies.map(m => `
-        <div style="margin:10px 0">
-          <img src="${m.poster}" height="80"><br>
-          <b>${m.title}</b> (${m.year})<br>
-          <small>${m.type}</small>
-        </div>
-      `).join("");
+    function deleteMovie(idx) {
+      if (!confirm("Delete this movie?")) return;
+      const arr = JSON.parse(localStorage.getItem("movies") || "[]");
+      arr.splice(idx,1);
+      localStorage.setItem("movies", JSON.stringify(arr));
+      loadPreview();
     }
 
-    showPreview();
+    function editMovie(idx) {
+      const arr = JSON.parse(localStorage.getItem("movies") || "[]");
+      const m = arr[idx];
+      ['poster','title','year','type','url'].forEach(id => {
+        document.getElementById(id).value = m[id];
+      });
+      editIndex = idx;
+      alert("Editing movie — make changes and click Add / Update.");
+    }
+
+    // Initialize preview on load
+    loadPreview();
   </script>
 </body>
 </html>
