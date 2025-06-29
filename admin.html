@@ -29,9 +29,18 @@
 </head>
 <body>
 
-  <h2>🎬 Admin Panel (LocalStorage)</h2>
+  <!-- Only the top header section changed -->
+<h2>🎬 Admin Panel (LocalStorage)</h2>
+<div style="display:flex; gap:10px;">
+  <button onclick="goHome()">🏠 Home</button>
   <button onclick="logout()" class="logout">Logout</button>
+</div>
 
+<script>
+  function goHome() {
+    location.href = "index.html";
+  }
+</script>
   <input id="searchInput" placeholder="Search Movie..." />
   <button onclick="searchTMDB()">Search TMDb</button>
 
