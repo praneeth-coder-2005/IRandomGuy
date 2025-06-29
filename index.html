@@ -156,53 +156,67 @@
     <!-- Cards injected here -->
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
   <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
   <script>
-    const movies = JSON.parse(localStorage.getItem('movies') || '[]');
+    const supabase = supabase.createClient(
+      'https://aoqszjgglkbceegjsreh.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFvcXN6amdnbGtiY2VlZ2pzcmVoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEyMTA4MTMsImV4cCI6MjA2Njc4NjgxM30.GaB-OT2UTwKOrU8bJCrXa771hSYFgdU3GQC6Ge39nCQ'
+    );
+
     const swiperWrapper = document.getElementById('swiper-slides');
     const featuredRow = document.getElementById('featured-row');
 
-    movies.forEach(movie => {
-      // Slider
-      const slide = document.createElement('div');
-      slide.className = 'swiper-slide';
-      slide.innerHTML = `
-        <img src="${movie.poster}" />
-        <div class="slide-title">${movie.title}</div>
-        <div class="slide-year">${movie.year}</div>
-        <div class="slide-type">MOVIE</div>
-      `;
-      slide.onclick = () => window.location.href = `player.html?url=${encodeURIComponent(movie.url)}`;
-      swiperWrapper.appendChild(slide);
+    async function loadMovies() {
+      const { data: movies, error } = await supabase
+        .from('Movies')
+        .select('*')
+        .order('year', { ascending: false });
 
-      // Featured row
-      const card = document.createElement('div');
-      card.className = 'featured-card';
-      card.innerHTML = `
-        <img src="${movie.poster}" />
-        <div class="featured-badge">FEATURED</div>
-        <div class="featured-title">${movie.title} (${movie.year})</div>
-      `;
-      card.onclick = () => window.location.href = `player.html?url=${encodeURIComponent(movie.url)}`;
-      featuredRow.appendChild(card);
-    });
+      if (error) {
+        alert("Failed to load movies from Supabase");
+        console.error(error);
+        return;
+      }
 
-    new Swiper('.swiper', {
-      loop: true,
-      autoplay: { delay: 3000 },
-      pagination: { el: '.swiper-pagination' }
-    });
-    // Existing Swiper and render logic...
-new Swiper('.swiper', {
-  loop: true,
-  autoplay: { delay: 3000 },
-  pagination: { el: '.swiper-pagination' }
-});
+      movies.forEach(movie => {
+        // Slider
+        const slide = document.createElement('div');
+        slide.className = 'swiper-slide';
+        slide.innerHTML = `
+          <img src="${movie.poster}" />
+          <div class="slide-title">${movie.title}</div>
+          <div class="slide-year">${movie.year}</div>
+          <div class="slide-type">${movie.type}</div>
+        `;
+        slide.onclick = () => window.location.href = `player.html?url=${encodeURIComponent(movie.url)}`;
+        swiperWrapper.appendChild(slide);
 
-// 👇 Add this to make ☰ menu go to admin login
-document.querySelector(".menu").onclick = () => {
-  window.location.href = "login.html";
-};
+        // Featured row
+        const card = document.createElement('div');
+        card.className = 'featured-card';
+        card.innerHTML = `
+          <img src="${movie.poster}" />
+          <div class="featured-badge">FEATURED</div>
+          <div class="featured-title">${movie.title} (${movie.year})</div>
+        `;
+        card.onclick = () => window.location.href = `player.html?url=${encodeURIComponent(movie.url)}`;
+        featuredRow.appendChild(card);
+      });
+
+      new Swiper('.swiper', {
+        loop: true,
+        autoplay: { delay: 3000 },
+        pagination: { el: '.swiper-pagination' }
+      });
+    }
+
+    loadMovies();
+
+    // ☰ menu to login page
+    document.querySelector(".menu").onclick = () => {
+      window.location.href = "login.html";
+    };
   </script>
 
 </body>
