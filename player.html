@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
   <meta charset="UTF-8" />
   <title>Troop Player</title>
@@ -11,16 +11,34 @@
       background: #111;
       color: white;
       font-family: sans-serif;
+      position: relative;
+      overflow-x: hidden;
+    }
+    .bg-blur {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background-position: center;
+      background-size: cover;
+      filter: blur(20px);
+      opacity: 0.3;
+      z-index: -1;
     }
     .nav {
+      background: rgba(0,0,0,0.6);
+      padding: 10px 15px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: #000;
-      padding: 10px 15px;
       position: sticky;
       top: 0;
-      z-index: 999;
+      z-index: 1000;
+    }
+    .nav h2 {
+      font-size: 16px;
+      margin: 0;
+      flex: 1;
+      text-align: center;
     }
     .nav button {
       background: rgba(255,255,255,0.1);
@@ -31,37 +49,20 @@
       font-size: 14px;
       cursor: pointer;
     }
-    .nav h2 {
-      font-size: 16px;
-      margin: 0;
-      flex: 1;
-      text-align: center;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
     #my-video1 {
-      width: 100vw;
-      max-height: 56.25vw; /* 16:9 aspect ratio */
+      width: 100%;
+      max-height: 56.25vw;
     }
     .info {
       padding: 15px;
-    }
-    .info h3 {
-      margin-top: 0;
-      font-size: 18px;
-    }
-    .info .section {
-      margin-bottom: 20px;
+      background: rgba(0,0,0,0.6);
     }
     .info .label {
-      font-weight: bold;
       color: #1e88e5;
+      font-weight: bold;
     }
     .info .text {
-      margin-top: 5px;
-      font-size: 15px;
-      line-height: 1.5;
+      margin: 5px 0 15px;
     }
     .share-btn {
       background: #1e88e5;
@@ -71,53 +72,51 @@
       border-radius: 5px;
       font-size: 14px;
       cursor: pointer;
-      margin-top: 10px;
     }
   </style>
 </head>
 <body>
 
+<div class="bg-blur" id="blurBg"></div>
+
 <div class="nav">
   <button onclick="history.back()">⬅ Back</button>
-  <h2 id="pageTitle">Now Playing</h2>
-  <button onclick="location.href='index.html'">🏠 Home</button>
+  <h2 id="titleHead">Now Playing</h2>
+  <button onclick="location.href='index.html'">🏠</button>
 </div>
 
 <div id="my-video1"></div>
 
 <div class="info">
-  <div class="section">
-    <div class="label">Description</div>
-    <div class="text" id="descText">No description provided.</div>
-  </div>
-  <div class="section">
-    <div class="label">Cast & Crew</div>
-    <div class="text" id="castText">Not available</div>
-  </div>
-  <div class="section">
-    <div class="label">Year / Type</div>
-    <div class="text" id="yearTypeText">-</div>
-  </div>
-  <button class="share-btn" onclick="copyLink()">🔗 Share This Movie</button>
+  <div class="label">📜 Description</div>
+  <div class="text" id="descText">No description</div>
+
+  <div class="label">🎭 Cast</div>
+  <div class="text" id="castText">Unknown</div>
+
+  <div class="label">📆 Year & Type</div>
+  <div class="text" id="metaText">-</div>
+
+  <button class="share-btn" onclick="copyLink()">🔗 Share</button>
 </div>
 
 <script>
-  const params = new URLSearchParams(location.search);
-  const url = params.get("url");
-  const title = params.get("title") || "Now Playing";
-  const desc = params.get("desc") || "";
-  const cast = params.get("cast") || "";
-  const year = params.get("year") || "";
-  const type = params.get("type") || "";
+  const p = new URLSearchParams(location.search);
+  const url = p.get("url");
+  const title = decodeURIComponent(p.get("title") || "");
+  const desc = decodeURIComponent(p.get("desc") || "");
+  const cast = decodeURIComponent(p.get("cast") || "");
+  const year = decodeURIComponent(p.get("year") || "");
+  const type = decodeURIComponent(p.get("type") || "");
+  const poster = decodeURIComponent(p.get("poster") || "");
 
-  document.getElementById("pageTitle").innerText = decodeURIComponent(title);
-  document.getElementById("descText").innerText = decodeURIComponent(desc);
-  document.getElementById("castText").innerText = decodeURIComponent(cast);
-  document.getElementById("yearTypeText").innerText = `${year} · ${type}`;
+  document.getElementById("titleHead").innerText = title;
+  document.getElementById("descText").innerText = desc;
+  document.getElementById("castText").innerText = cast;
+  document.getElementById("metaText").innerText = `${year} · ${type}`;
+  document.getElementById("blurBg").style.backgroundImage = `url(${poster})`;
 
-  if (!url) {
-    alert("❌ No video URL provided.");
-  } else {
+  if (url) {
     jwplayer("my-video1").setup({
       playlist: [{
         sources: [{
@@ -131,17 +130,15 @@
       hlshtml: true,
       autostart: false
     });
+  } else {
+    alert("Missing video URL.");
   }
 
   function copyLink() {
-    const shareUrl = window.location.href;
-    navigator.clipboard.writeText(shareUrl).then(() => {
-      alert("🔗 Link copied to clipboard!");
-    }).catch(() => {
-      alert("❌ Could not copy link.");
+    navigator.clipboard.writeText(location.href).then(() => {
+      alert("Link copied!");
     });
   }
 </script>
-
 </body>
 </html>
