@@ -5,7 +5,7 @@
   <title>Admin Panel</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
-    body { background: #111; color: white; font-family: sans-serif; padding: 20px; }
+    body { background: #111; color: #fff; font-family: sans-serif; padding: 20px; }
     header { display: flex; justify-content: space-between; align-items: center; }
     input, select, button {
       width: 100%; margin-top: 10px; padding: 10px;
@@ -29,7 +29,7 @@
 <body>
 
   <header>
-    <h2>Troop Admin Panel</h2>
+    <h2>🎬 Troop Admin Panel</h2>
     <div>
       <button onclick="goHome()">Back</button>
       <button class="logout" onclick="logout()">Logout</button>
@@ -40,7 +40,7 @@
   <input id="searchInput" placeholder="e.g. RRR">
   <button onclick="searchTMDB()">Search TMDb</button>
 
-  <label>Select Movie/TV</label>
+  <label>Select Result</label>
   <select id="resultList"><option value="">-- No results --</option></select>
 
   <label>Poster</label><input id="poster" readonly />
@@ -94,25 +94,26 @@
         });
     }
 
-    document.getElementById("resultList").addEventListener("change", async function () {
-      const val = this.value;
-      if (!val) return;
-      const [id, type] = val.split("|");
+    document.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("resultList").addEventListener("change", async function () {
+        const val = this.value;
+        if (!val) return;
+        const [id, type] = val.split("|");
 
-      const res = await fetch(`https://api.themoviedb.org/3/${type}/${id}?api_key=${TMDB_KEY}`);
-      const data = await res.json();
+        const res = await fetch(`https://api.themoviedb.org/3/${type}/${id}?api_key=${TMDB_KEY}`);
+        const data = await res.json();
 
-      const poster = data.poster_path ? `https://image.tmdb.org/t/p/w500${data.poster_path}` : "";
-      const title = data.title || data.name || "";
-      const year = (data.release_date || data.first_air_date || "").slice(0, 4);
-      const mediaType = type.toUpperCase();
+        const poster = data.poster_path ? `https://image.tmdb.org/t/p/w500${data.poster_path}` : "";
+        const title = data.title || data.name || "";
+        const year = (data.release_date || data.first_air_date || "").slice(0, 4);
+        const mediaType = type.toUpperCase();
 
-      document.getElementById("poster").value = poster;
-      document.getElementById("title").value = title;
-      document.getElementById("year").value = year;
-      document.getElementById("type").value = mediaType;
-
-      document.getElementById("posterPreview").innerHTML = poster ? `<img src="${poster}" width="100">` : '';
+        document.getElementById("poster").value = poster;
+        document.getElementById("title").value = title;
+        document.getElementById("year").value = year;
+        document.getElementById("type").value = mediaType;
+        document.getElementById("posterPreview").innerHTML = poster ? `<img src="${poster}" width="100">` : '';
+      });
     });
 
     async function addMovie() {
