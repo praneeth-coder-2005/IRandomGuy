@@ -115,10 +115,13 @@
       <div class="bar-left">
         <img id="playBtn" src="https://cdn-icons-png.flaticon.com/512/2088/2088569.png" onclick="togglePlay()" alt="Play">
         <!-- Backward 10s -->
-<img src="https://cdn-icons-png.flaticon.com/512/5296/5296749.png" onclick="skip(-10)" alt="Back 10s">
+<img src="https://cdn-icons-png.flaticon.com/512/565/565239.png"
+     style="transform: scaleX(-1);"
+     onclick="skip(-10)" alt="Back 10s" />
 
 <!-- Forward 10s -->
-<img src="https://cdn-icons-png.flaticon.com/512/5293/5293447.png" onclick="skip(10)" alt="Forward 10s">
+<img src="https://cdn-icons-png.flaticon.com/512/565/565239.png"
+     onclick="skip(10)" alt="Forward 10s" />
         <img id="volumeBtn" src="https://cdn-icons-png.flaticon.com/512/565/565296.png" onclick="toggleMute()" alt="Volume">
         <span class="time-display"><span id="currentTime">0:00</span> / <span id="totalTime">0:00</span></span>
       </div>
