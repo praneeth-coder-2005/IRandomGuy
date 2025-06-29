@@ -42,15 +42,35 @@
     <p id="msg" style="color:red;"></p>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
   <script>
-    function login() {
+    const supabase = supabase.createClient(
+      'https://aoqszjgglkbceegjsreh.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFvcXN6amdnbGtiY2VlZ2pzcmVoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEyMTA4MTMsImV4cCI6MjA2Njc4NjgxM30.GaB-OT2UTwKOrU8bJCrXa771hSYFgdU3GQC6Ge39nCQ'
+    );
+
+    async function login() {
       const user = username.value.trim();
       const pass = password.value.trim();
-      if (user === "admin" && pass === "pass") {
+      msg.innerText = '';
+
+      if (!user || !pass) {
+        msg.innerText = "Please enter both fields.";
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('admins')
+        .select('*')
+        .eq('username', user)
+        .eq('password', pass)
+        .single();
+
+      if (error || !data) {
+        msg.innerText = "Invalid credentials";
+      } else {
         localStorage.setItem("admin_login", "true");
         location.href = "admin.html";
-      } else {
-        msg.innerText = "Invalid credentials";
       }
     }
   </script>
