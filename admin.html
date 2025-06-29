@@ -1,28 +1,45 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Admin Panel</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
-    body { background: #121212; color: #fff; font-family: Arial; padding: 20px; }
+    body {
+      background: #111; color: #fff; font-family: sans-serif;
+      padding: 20px;
+    }
     input, select {
-      width: 100%; padding: 10px; background: #1e1e1e; border: none; color: white; border-radius: 5px;
-      margin-top: 5px;
+      width: 100%; margin-top: 8px; padding: 10px;
+      border: none; background: #222; color: white;
+      border-radius: 5px;
     }
     label { margin-top: 10px; display: block; }
     button {
-      width: 100%; background: #1e88e5; padding: 10px; margin-top: 15px;
-      border: none; border-radius: 5px; color: white; font-weight: bold; cursor: pointer;
+      margin-top: 15px;
+      width: 100%; padding: 10px;
+      background: #1e88e5; color: white;
+      border: none; border-radius: 5px;
+      font-weight: bold;
     }
-    .preview-grid {
-      margin-top: 30px; display: flex; gap: 12px; flex-wrap: wrap;
+    .preview {
+      margin-top: 25px;
+      display: flex; gap: 10px; flex-wrap: wrap;
     }
     .card {
-      background: #1c1c1c; padding: 10px; border-radius: 6px; width: 140px; text-align: center;
+      width: 140px;
+      background: #222;
+      border-radius: 6px;
+      overflow: hidden;
+      text-align: center;
     }
-    .card img { width: 100%; border-radius: 5px; }
-    .card a { color: white; text-decoration: none; }
+    .card img {
+      width: 100%; border-radius: 6px 6px 0 0;
+    }
+    .card-title {
+      padding: 8px;
+      font-size: 13px;
+    }
   </style>
 </head>
 <body>
@@ -33,60 +50,50 @@
   }
 </script>
 
-<h1>Troop Admin Panel</h1>
-<label>Search Title (TMDB)</label>
-<input type="text" id="searchText" />
-<button onclick="searchTMDB()">Search TMDB</button>
+<h2>🎬 Troop Admin Panel</h2>
 
-<label>Choose Result:</label>
-<select id="tmdbResults"><option value="">-- Select movie --</option></select>
+<label>Search Movie Title</label>
+<input id="searchInput" type="text" placeholder="e.g. John Wick"/>
+<button onclick="searchTMDB()">Search TMDb</button>
 
-<label>Poster URL</label><input type="text" id="poster" readonly />
-<label>Title</label><input type="text" id="title" readonly />
-<label>Year</label><input type="text" id="year" readonly />
-<label>Tag</label><input type="text" id="tag" />
-<label>Video URL</label><input type="text" id="video" />
-<button onclick="addMovie()">Add Movie</button>
+<label>Select Result</label>
+<select id="resultList"></select>
 
-<div class="preview-grid" id="preview"></div>
+<label>Poster</label><input id="poster" readonly />
+<label>Title</label><input id="title" readonly />
+<label>Year</label><input id="year" readonly />
+<label>Type</label><input id="type" readonly />
+<label>Video URL</label><input id="url" placeholder="https://..." />
+
+<button onclick="addMovie()">Add Movie to Homepage</button>
+
+<h3>🗂️ Preview Added Movies:</h3>
+<div class="preview" id="previewList"></div>
 
 <script>
-  const TMDB_KEY = 'bb5f40c5be4b24660cbdc20c2409835e'; // Replace with your TMDB API key
-  const sel = document.getElementById("tmdbResults");
+  const TMDB_KEY = "YOUR_TMDB_API_KEY"; // 🔑 Replace with your TMDb key
 
   async function searchTMDB() {
-    const q = document.getElementById("searchText").value.trim();
-    const res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${TMDB_KEY}&query=${q}`);
-    const j = await res.json();
-    sel.innerHTML = `<option value="">-- Select --</option>`;
-    j.results.forEach(r => {
-      sel.innerHTML += `<option value="${r.id}|${r.media_type}">${r.title||r.name}</option>`;
+    const query = document.getElementById("searchInput").value;
+    const res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${TMDB_KEY}&query=${query}`);
+    const json = await res.json();
+    const results = json.results.filter(r => r.poster_path);
+    const resultList = document.getElementById("resultList");
+    resultList.innerHTML = "";
+    results.forEach(item => {
+      const label = item.title || item.name;
+      resultList.innerHTML += `<option value="${item.id}|${item.media_type}">${label}</option>`;
     });
-  }
 
-  sel.onchange = async () => {
-    const [id, type] = sel.value.split('|');
-    const res = await fetch(`https://api.themoviedb.org/3/${type}/${id}?api_key=${TMDB_KEY}`);
-    const j = await res.json();
-    poster.value = `https://image.tmdb.org/t/p/w500${j.poster_path}`;
-    title.value = j.title || j.name;
-    year.value = (j.release_date || j.first_air_date || '').slice(0,4);
-    tag.value = type.toUpperCase();
-  }
-
-  function loadMovies() {
-    const data = JSON.parse(localStorage.getItem("troop_movies") || "[]");
-    const preview = document.getElementById("preview");
-    preview.innerHTML = '';
-    data.forEach(m => {
-      preview.innerHTML += `
-        <div class="card">
-          <a href="player.html?video=${encodeURIComponent(m.video)}">
-            <img src="${m.poster}" />
-            <div>${m.title}</div><div>${m.year}</div>
-          </a>
-        </div>`;
-    });
+    resultList.onchange = async () => {
+      const [id, type] = resultList.value.split("|");
+      const res = await fetch(`https://api.themoviedb.org/3/${type}/${id}?api_key=${TMDB_KEY}`);
+      const data = await res.json();
+      document.getElementById("poster").value = `https://image.tmdb.org/t/p/w500${data.poster_path}`;
+      document.getElementById("title").value = data.title || data.name;
+      document.getElementById("year").value = (data.release_date || data.first_air_date || "").split("-")[0];
+      document.getElementById("type").value = type.toUpperCase();
+    };
   }
 
   function addMovie() {
@@ -94,17 +101,31 @@
       poster: poster.value,
       title: title.value,
       year: year.value,
-      tag: tag.value,
-      video: video.value
+      type: type.value,
+      url: url.value
     };
-    const arr = JSON.parse(localStorage.getItem("troop_movies") || "[]");
-    arr.push(movie);
-    localStorage.setItem("troop_movies", JSON.stringify(arr));
-    loadMovies();
-    alert("Movie added!");
+    const existing = JSON.parse(localStorage.getItem("movies") || "[]");
+    existing.push(movie);
+    localStorage.setItem("movies", JSON.stringify(existing));
+    alert("✅ Movie added to homepage!");
+    loadPreview();
   }
 
-  window.onload = loadMovies;
+  function loadPreview() {
+    const list = JSON.parse(localStorage.getItem("movies") || "[]");
+    const out = document.getElementById("previewList");
+    out.innerHTML = "";
+    list.forEach(movie => {
+      out.innerHTML += `
+        <div class="card">
+          <img src="${movie.poster}" />
+          <div class="card-title">${movie.title}</div>
+        </div>
+      `;
+    });
+  }
+
+  window.onload = loadPreview;
 </script>
 </body>
 </html>
