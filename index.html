@@ -12,35 +12,50 @@
       color: #fff;
     }
 
-    /* Header */
     .header {
       display: flex;
       align-items: center;
       justify-content: space-between;
       padding: 12px 16px;
       background-color: #000;
+      position: relative;
     }
-    .menu-icon { width: 24px; cursor: pointer; }
+    .menu-icon {
+      width: 24px; cursor: pointer;
+    }
     .menu-icon span {
-      display: block;
-      height: 3px; margin: 4px 0;
-      background: white; border-radius: 1px;
+      display: block; height: 3px;
+      margin: 4px 0;
+      background: white;
+      border-radius: 1px;
     }
-    .logo {
-      display: flex; align-items: center; gap: 8px;
-    }
+    .logo { display: flex; align-items: center; gap: 8px; }
     .logo img { height: 30px; }
     .logo-text { font-weight: bold; font-size: 16px; line-height: 1.1; }
     .search-icon {
       width: 22px; height: 22px; border: 2px solid #fff;
-      border-radius: 50%; position: relative; cursor: pointer;
+      border-radius: 50%; position: relative;
     }
     .search-icon::after {
       content: ''; position: absolute; bottom: -6px; right: -6px;
-      width: 10px; height: 2px; background: white; transform: rotate(-45deg);
+      width: 10px; height: 2px; background: white;
+      transform: rotate(-45deg);
+    }
+    #menu-popup {
+      display: none;
+      position: absolute;
+      top: 50px;
+      left: 10px;
+      background: #222;
+      padding: 10px;
+      border-radius: 6px;
+      z-index: 100;
+    }
+    #menu-popup a {
+      color: white;
+      text-decoration: none;
     }
 
-    /* Slider */
     .slider-container {
       overflow-x: scroll;
       scroll-snap-type: x mandatory;
@@ -56,7 +71,6 @@
       border-radius: 8px;
       overflow: hidden;
       position: relative;
-      cursor: pointer;
     }
     .slide img {
       width: 100%;
@@ -87,23 +101,6 @@
       font-size: 11px;
     }
 
-    /* Dots */
-    .dots {
-      display: flex;
-      justify-content: center;
-      gap: 6px;
-      margin: 6px 0 16px;
-    }
-    .dot {
-      width: 8px; height: 8px;
-      border-radius: 50%;
-      background: #555;
-    }
-    .dot.active {
-      background: white;
-    }
-
-    /* Featured Titles */
     .section-title {
       font-size: 18px;
       font-weight: bold;
@@ -151,127 +148,44 @@
   </style>
 </head>
 <body>
-<div id="adminBtn" style="display:none; text-align:center; margin: 20px;">
-  <a href="admin.html" style="
-    background:#1e88e5;
-    padding:10px 20px;
-    border-radius:8px;
-    color:white;
-    text-decoration:none;
-    font-weight:bold;
-    display:inline-block;
-  ">🔒 Admin Panel</a>
+
+<div class="header">
+  <div class="menu-icon" onclick="toggleMenu()">
+    <span></span><span></span><span></span>
+    <div id="menu-popup">
+      <a href="login.html">🔒 Admin Login</a>
+    </div>
+  </div>
+  <div class="logo">
+    <img src="https://i.postimg.cc/G2wXkG7f/troop-t-logo.png" />
+    <div class="logo-text"><div>TROOP</div><div>ORIGINALS</div></div>
+  </div>
+  <div class="search-icon"></div>
 </div>
-  <!-- Header -->
-  <div class="header">
-    <div class="menu-icon" onclick="toggleMenu()">
-  <span></span><span></span><span></span>
-  <div id="menu-popup" style="display:none; position:absolute; top:50px; left:10px; background:#222; padding:10px; border-radius:6px; z-index:100;">
-    <a href="login.html" style="color:#fff; text-decoration:none; display:block;">🔒 Admin Login</a>
-  </div>
-    </div>
-    <div class="logo">
-      <img src="https://i.postimg.cc/G2wXkG7f/troop-t-logo.png" />
-      <div class="logo-text">
-        <div>TROOP</div><div>ORIGINALS</div>
-      </div>
-    </div>
-    <div class="search-icon"></div>
-  </div>
 
-  <!-- Slider -->
-  <div class="slider-container" id="slider">
-    <a class="slide" href="player.html?video=https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4">
-      <img src="https://image.tmdb.org/t/p/w500/8kpJ8DqHcREvumeWpMjJcsPMgVA.jpg" />
-      <div class="slide-title">FURIOSA: A MAD MAX SAGA</div>
-      <div class="slide-year">2024</div>
-      <div class="slide-tag">MOVIE</div>
-    </a>
-    <a class="slide" href="player.html?video=https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4">
-      <img src="https://image.tmdb.org/t/p/w500/t5zCBSB5xMDKcDqe91qahCOUYVV.jpg" />
-      <div class="slide-title">SERIAL EXPERIMENTS LAIN</div>
-      <div class="slide-year">1998</div>
-      <div class="slide-tag">TV</div>
-    </a>
-  </div>
+<div class="slider-container">
+  <a class="slide" href="player.html?video=https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4">
+    <img src="https://image.tmdb.org/t/p/w500/8kpJ8DqHcREvumeWpMjJcsPMgVA.jpg" />
+    <div class="slide-title">FURIOSA</div>
+    <div class="slide-year">2024</div>
+    <div class="slide-tag">MOVIE</div>
+  </a>
+</div>
 
-  <!-- Dots -->
-  <div class="dots" id="dots">
-    <div class="dot active"></div>
-    <div class="dot"></div>
-  </div>
+<div class="section-title">Featured Titles</div>
+<div class="featured-row">
+  <a class="featured-item" href="player.html?video=https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4">
+    <img src="https://image.tmdb.org/t/p/w500/a4Z6fNse5WbiKXc2gErlKvKMCXV.jpg" />
+    <div class="featured-label">FEATURED</div>
+    <div class="featured-name">Kuberaa</div>
+  </a>
+</div>
 
-  <!-- Featured Titles -->
-  <div class="section-title">Featured titles</div>
-  <div class="featured-row">
-    <a class="featured-item" href="player.html?video=https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4">
-      <img src="https://image.tmdb.org/t/p/w500/a4Z6fNse5WbiKXc2gErlKvKMCXV.jpg" />
-      <div class="featured-label">FEATURED</div>
-      <div class="featured-name">Kuberaa (2025)</div>
-    </a>
-    <a class="featured-item" href="player.html?video=https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4">
-      <img src="https://image.tmdb.org/t/p/w500/wzJAk5wnFkrb7zIguMLPnVft9E8.jpg" />
-      <div class="featured-label">FEATURED</div>
-      <div class="featured-name">Blind Spot (2025)</div>
-    </a>
-    <a class="featured-item" href="player.html?video=https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4">
-      <img src="https://image.tmdb.org/t/p/w500/vBZ0qvaRxqEhZwl6LWmruJqWE8Z.jpg" />
-      <div class="featured-label">FEATURED</div>
-      <div class="featured-name">Devil's Double Next Level</div>
-    </a>
-  </div>
-
-  <script>
-    const slider = document.getElementById('slider');
-    const slides = slider.querySelectorAll('.slide');
-    const dots = document.getElementById('dots').children;
-    let currentIndex = 0;
-
-    function updateDots(index) {
-      for (let i = 0; i < dots.length; i++) {
-        dots[i].classList.remove('active');
-      }
-      if (dots[index]) dots[index].classList.add('active');
-    }
-
-    function goToSlide(index) {
-      const slideWidth = slides[0].offsetWidth + 12;
-      slider.scrollLeft = slideWidth * index;
-      updateDots(index);
-      currentIndex = index;
-    }
-
-    // Auto Slide every 5 seconds
-    setInterval(() => {
-      currentIndex = (currentIndex + 1) % slides.length;
-      goToSlide(currentIndex);
-    }, 5000);
-
-    slider.addEventListener('scroll', () => {
-      const slideWidth = slides[0].offsetWidth + 12;
-      const index = Math.round(slider.scrollLeft / slideWidth);
-      if (index !== currentIndex) {
-        updateDots(index);
-        currentIndex = index;
-      }
-    });
-  </script>
 <script>
-  window.onload = () => {
-    // Ensure Telegram WebApp SDK loaded
-    if (window.Telegram && Telegram.WebApp && Telegram.WebApp.initDataUnsafe?.user?.id) {
-      const currentUserId = Telegram.WebApp.initDataUnsafe.user.id;
-      const adminId = 1894915577; // 👈 Replace with your Telegram user ID
-
-      if (currentUserId === adminId) {
-        document.getElementById('adminBtn').style.display = 'block';
-      }
-    }
-  };
-</script>  
-</body>
   function toggleMenu() {
-  const menu = document.getElementById('menu-popup');
-  menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
-}
+    const menu = document.getElementById('menu-popup');
+    menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+  }
+</script>
+</body>
 </html>
