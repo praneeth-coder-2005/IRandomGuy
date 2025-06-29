@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Custom Player</title>
+  <title>Custom JW-Style Player</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     body {
@@ -43,34 +43,43 @@
     .video-wrapper {
       position: relative;
       width: 100%;
-      max-height: 56.25vw;
       background: black;
     }
     video {
       width: 100%;
       height: auto;
     }
+
     .controls {
       position: absolute;
-      bottom: 10px;
-      left: 10px;
-      right: 10px;
-      background: rgba(0,0,0,0.5);
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.4);
       display: flex;
-      justify-content: space-around;
+      justify-content: space-between;
       align-items: center;
-      border-radius: 8px;
-      padding: 6px;
+      padding: 8px 12px;
+      z-index: 999;
     }
+
+    .control-left, .control-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
     .controls img {
-      width: 28px;
-      height: 28px;
+      width: 24px;
+      height: 24px;
       filter: brightness(0) invert(1);
       cursor: pointer;
     }
+
     .info {
       padding: 15px;
     }
+
     .info h2 { margin: 8px 0; }
     .info .meta { font-size: 13px; color: #ccc; }
     .info p { margin-top: 10px; line-height: 1.4; }
@@ -103,9 +112,13 @@
   </video>
 
   <div class="controls">
-    <img id="playBtn" src="https://cdn-icons-png.flaticon.com/512/2088/2088569.png" alt="Play" onclick="togglePlay()" />
-    <img id="volumeBtn" src="https://cdn-icons-png.flaticon.com/512/565/565296.png" alt="Volume" onclick="toggleMute()" />
-    <img id="fullscreenBtn" src="https://cdn-icons-png.flaticon.com/512/3354/3354155.png" alt="Fullscreen" onclick="toggleFullscreen()" />
+    <div class="control-left">
+      <img id="playBtn" src="https://cdn-icons-png.flaticon.com/512/2088/2088569.png" alt="Play" onclick="togglePlay()" />
+    </div>
+    <div class="control-right">
+      <img id="volumeBtn" src="https://cdn-icons-png.flaticon.com/512/565/565296.png" alt="Volume" onclick="toggleMute()" />
+      <img id="fullscreenBtn" src="https://cdn-icons-png.flaticon.com/512/3354/3354155.png" alt="Fullscreen" onclick="toggleFullscreen()" />
+    </div>
   </div>
 </div>
 
@@ -130,7 +143,6 @@
   const player = document.getElementById("player");
   const videoSource = document.getElementById("videoSource");
 
-  // Load video
   if (url) {
     videoSource.src = url;
     player.load();
@@ -138,7 +150,6 @@
     alert("❌ No video URL provided.");
   }
 
-  // Fill data
   document.getElementById("titleText").innerText = title;
   document.getElementById("movieTitle").innerText = title;
   document.getElementById("metaText").innerText = `${year} · ${type}`;
@@ -164,18 +175,18 @@
   function toggleMute() {
     player.muted = !player.muted;
     volumeBtn.src = player.muted
-      ? "https://cdn-icons-png.flaticon.com/512/4546/4546899.png" // mute
-      : "https://cdn-icons-png.flaticon.com/512/565/565296.png";  // volume
+      ? "https://cdn-icons-png.flaticon.com/512/4546/4546899.png"
+      : "https://cdn-icons-png.flaticon.com/512/565/565296.png";
   }
 
   function toggleFullscreen() {
     const isFull = document.fullscreenElement;
     if (!isFull) {
       player.requestFullscreen();
-      fullscreenBtn.src = "https://cdn-icons-png.flaticon.com/512/3502/3502504.png"; // minimize
+      fullscreenBtn.src = "https://cdn-icons-png.flaticon.com/512/3502/3502504.png";
     } else {
       document.exitFullscreen();
-      fullscreenBtn.src = "https://cdn-icons-png.flaticon.com/512/3354/3354155.png"; // fullscreen
+      fullscreenBtn.src = "https://cdn-icons-png.flaticon.com/512/3354/3354155.png";
     }
   }
 
