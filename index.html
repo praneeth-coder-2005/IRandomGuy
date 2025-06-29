@@ -5,6 +5,7 @@
   <title>Troop Originals</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css"/>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     body {
       margin: 0;
@@ -30,6 +31,10 @@
       font-size: 24px;
       color: white;
       cursor: pointer;
+    }
+
+    .menu {
+      display: none; /* hidden by default */
     }
 
     .swiper {
@@ -139,7 +144,7 @@
 <body>
 
   <div class="header">
-    <div class="menu">&#9776;</div>
+    <div class="menu" id="adminMenu">&#9776;</div>
     <img src="https://i.imgur.com/dSU3Ysp.png" alt="Troop Originals">
     <div class="search">&#128269;</div>
   </div>
@@ -180,7 +185,6 @@
       }
 
       movies.forEach(movie => {
-        // Slider
         const slide = document.createElement('div');
         slide.className = 'swiper-slide';
         slide.innerHTML = `
@@ -192,7 +196,6 @@
         slide.onclick = () => window.location.href = `player.html?url=${encodeURIComponent(movie.url)}`;
         swiperWrapper.appendChild(slide);
 
-        // Featured row
         const card = document.createElement('div');
         card.className = 'featured-card';
         card.innerHTML = `
@@ -213,10 +216,17 @@
 
     loadMovies();
 
-    // ☰ menu to login page
-    document.querySelector(".menu").onclick = () => {
-      window.location.href = "login.html";
-    };
+    // ✅ Only show ☰ if Telegram user ID = 1894915577
+    try {
+      const tgUserId = window.Telegram.WebApp.initDataUnsafe?.user?.id;
+      if (tgUserId === 1894915577) {
+        const menu = document.getElementById("adminMenu");
+        menu.style.display = "block";
+        menu.onclick = () => window.location.href = "admin.html";
+      }
+    } catch (err) {
+      console.warn("Telegram WebApp not available", err);
+    }
   </script>
 
 </body>
