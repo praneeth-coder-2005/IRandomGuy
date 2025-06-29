@@ -165,27 +165,22 @@
 
     async function searchTMDB() {
       const query = document.getElementById("searchInput").value.trim();
-      if (!query) return alert("Please enter a movie name.");
+      if (!query) return alert("Enter a title first.");
 
-      try {
-        const res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${TMDB_KEY}&query=${encodeURIComponent(query)}`);
-        const json = await res.json();
+      const res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${TMDB_KEY}&query=${encodeURIComponent(query)}`);
+      const json = await res.json();
 
-        const select = document.getElementById("resultList");
-        select.innerHTML = '<option value="">-- Select movie/show --</option>';
+      const select = document.getElementById("resultList");
+      select.innerHTML = '<option value="">-- Select movie/show --</option>';
 
-        json.results
-          .filter(item => item.poster_path)
-          .forEach(item => {
-            const label = item.title || item.name;
-            const year = (item.release_date || item.first_air_date || "").slice(0, 4);
-            const type = item.media_type;
-            const value = `${item.id}|${type}`;
-            select.innerHTML += `<option value="${value}">${label} (${year})</option>`;
-          });
-      } catch (err) {
-        alert("Failed to fetch from TMDb.");
-      }
+      json.results
+        .filter(item => (item.media_type === 'movie' || item.media_type === 'tv') && item.poster_path)
+        .forEach(item => {
+          const name = item.title || item.name;
+          const year = (item.release_date || item.first_air_date || '').slice(0, 4);
+          const label = `${name} (${year})`;
+          select.innerHTML += `<option value="${item.id}|${item.media_type}">${label}</option>`;
+        });
     }
 
     document.getElementById("resultList").onchange = async function () {
@@ -193,31 +188,22 @@
       if (!val) return;
 
       const [id, type] = val.split("|");
+      const res = await fetch(`https://api.themoviedb.org/3/${type}/${id}?api_key=${TMDB_KEY}`);
+      const data = await res.json();
 
-      try {
-        const res = await fetch(`https://api.themoviedb.org/3/${type}/${id}?api_key=${TMDB_KEY}`);
-        const data = await res.json();
+      const poster = data.poster_path ? `https://image.tmdb.org/t/p/w500${data.poster_path}` : "";
+      const title = data.title || data.name || "Untitled";
+      const year = (data.release_date || data.first_air_date || "").slice(0, 4);
+      const mediaType = type.toUpperCase();
 
-        const poster = data.poster_path
-          ? `https://image.tmdb.org/t/p/w500${data.poster_path}`
-          : "";
+      document.getElementById("poster").value = poster;
+      document.getElementById("title").value = title;
+      document.getElementById("year").value = year;
+      document.getElementById("type").value = mediaType;
 
-        const title = data.title || data.name || "Untitled";
-        const year = (data.release_date || data.first_air_date || "").slice(0, 4);
-        const mediaType = type.toUpperCase();
-
-        document.getElementById("poster").value = poster;
-        document.getElementById("title").value = title;
-        document.getElementById("year").value = year;
-        document.getElementById("type").value = mediaType;
-
-        document.getElementById("posterPreview").innerHTML = poster
-          ? `<img src="${poster}" alt="poster preview">`
-          : '';
-
-      } catch (err) {
-        alert("Error loading movie details from TMDb.");
-      }
+      document.getElementById("posterPreview").innerHTML = poster
+        ? `<img src="${poster}" alt="poster preview">`
+        : '';
     };
 
     async function loadPreview() {
@@ -247,7 +233,7 @@
         url: document.getElementById("url").value.trim()
       };
 
-      if (!movie.poster || !movie.title || !movie.url) return alert("Please fill all required fields.");
+      if (!movie.poster || !movie.title || !movie.url) return alert("Fill all required fields.");
 
       if (editingMovieId) {
         const { error } = await supabase.from("Movies").update(movie).eq("id", editingMovieId);
