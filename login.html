@@ -2,34 +2,31 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Login</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin Login</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     body {
-      background: #121212; color: white; display: flex;
-      align-items: center; justify-content: center;
-      flex-direction: column; height: 100vh;
-      font-family: Arial;
+      background: #121212; color: white;
+      font-family: Arial; display: flex;
+      justify-content: center; align-items: center;
+      height: 100vh;
     }
     .box {
-      background: #1a1a1a;
-      padding: 20px;
-      border-radius: 8px;
-      width: 90%;
-      max-width: 400px;
+      background: #1f1f1f; padding: 24px;
+      border-radius: 8px; width: 90%; max-width: 350px;
       text-align: center;
     }
     input {
       width: 100%; padding: 10px;
-      margin: 10px 0; border: none;
-      background: #1e1e1e; color: white;
+      margin-top: 10px; background: #2a2a2a;
+      border: none; color: white;
       border-radius: 5px;
     }
     button {
       background: #1e88e5;
-      border: none;
+      border: none; color: white;
+      margin-top: 15px;
       padding: 10px 20px;
-      color: white;
       border-radius: 5px;
       font-weight: bold;
       cursor: pointer;
@@ -39,17 +36,17 @@
 <body>
   <div class="box">
     <h2>Admin Login</h2>
-    <input type="text" id="username" placeholder="Username">
-    <input type="password" id="password" placeholder="Password">
+    <input type="text" id="username" placeholder="Username" />
+    <input type="password" id="password" placeholder="Password" />
     <button onclick="login()">Login</button>
-    <p id="msg" style="color: red; margin-top: 10px;"></p>
+    <p id="msg" style="color:red;"></p>
   </div>
 
   <script>
     function login() {
-      const u = username.value.trim();
-      const p = password.value.trim();
-      if (u === "admin" && p === "pass") {
+      const user = username.value.trim();
+      const pass = password.value.trim();
+      if (user === "admin" && pass === "pass") {
         localStorage.setItem("admin_login", "true");
         location.href = "admin.html";
       } else {
