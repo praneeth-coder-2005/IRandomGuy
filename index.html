@@ -151,7 +151,17 @@
   </style>
 </head>
 <body>
-
+<div id="adminBtn" style="display:none; text-align:center; margin: 20px;">
+  <a href="admin.html" style="
+    background:#1e88e5;
+    padding:10px 20px;
+    border-radius:8px;
+    color:white;
+    text-decoration:none;
+    font-weight:bold;
+    display:inline-block;
+  ">🔒 Admin Panel</a>
+</div>
   <!-- Header -->
   <div class="header">
     <div class="menu-icon">
@@ -243,5 +253,18 @@
       }
     });
   </script>
+<script>
+  window.onload = () => {
+    // Ensure Telegram WebApp SDK loaded
+    if (window.Telegram && Telegram.WebApp && Telegram.WebApp.initDataUnsafe?.user?.id) {
+      const currentUserId = Telegram.WebApp.initDataUnsafe.user.id;
+      const adminId = 5213680099; // 👈 Replace with your Telegram user ID
+
+      if (currentUserId === adminId) {
+        document.getElementById('adminBtn').style.display = 'block';
+      }
+    }
+  };
+</script>  
 </body>
 </html>
