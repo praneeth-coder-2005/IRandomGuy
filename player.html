@@ -1,53 +1,87 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Player</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Troop Player</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="//content.jwplatform.com/libraries/IDzF9Zmk.js"></script>
   <style>
     body {
       margin: 0;
-      background-color: #000;
+      background: black;
       color: white;
       font-family: sans-serif;
     }
-    .back-btn {
+    #my-video1 {
+      width: 100vw;
+      height: 100vh;
+    }
+    .nav {
       position: absolute;
       top: 10px;
       left: 10px;
+      z-index: 1000;
+      display: flex;
+      gap: 10px;
+    }
+    .nav button {
       background: rgba(0,0,0,0.6);
       color: white;
       padding: 8px 12px;
+      border: none;
       border-radius: 5px;
       font-size: 14px;
-      z-index: 1000;
       cursor: pointer;
     }
-    video {
-      width: 100%;
-      height: 100vh;
-      object-fit: cover;
-      background: black;
+    .title-bar {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(0, 0, 0, 0.5);
+      padding: 8px 14px;
+      border-radius: 5px;
+      font-size: 15px;
+      font-weight: bold;
+      max-width: 60vw;
+      text-align: right;
+      z-index: 1000;
     }
   </style>
 </head>
 <body>
 
-<div class="back-btn" onclick="goBack()">⬅ Back</div>
-<video controls autoplay id="player"></video>
+<div class="nav">
+  <button onclick="history.back()">⬅ Back</button>
+  <button onclick="location.href='index.html'">🏠 Home</button>
+</div>
+
+<div class="title-bar" id="movieTitle"></div>
+
+<div id="my-video1"></div>
 
 <script>
-  function goBack() {
-    history.back();
-  }
-
-  const params = new URLSearchParams(window.location.search);
+  const params = new URLSearchParams(location.search);
   const videoUrl = params.get("url");
+  const title = params.get("title") || "Now Playing";
 
-  if (videoUrl) {
-    document.getElementById("player").src = decodeURIComponent(videoUrl);
-  } else {
+  document.getElementById("movieTitle").innerText = decodeURIComponent(title);
+
+  if (!videoUrl) {
     alert("❌ No video URL provided.");
+  } else {
+    jwplayer('my-video1').setup({
+      playlist: [{
+        sources: [{
+          default: true,
+          type: "mp4",
+          file: decodeURIComponent(videoUrl),
+          label: "HD"
+        }]
+      }],
+      primary: "html5",
+      hlshtml: true,
+      autostart: false
+    });
   }
 </script>
 
