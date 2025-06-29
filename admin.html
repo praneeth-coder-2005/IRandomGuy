@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Admin Panel</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
@@ -17,10 +17,16 @@
     label { margin-top: 10px; display: block; }
     button {
       margin-top: 15px;
-      width: 100%; padding: 10px;
+      padding: 10px;
       background: #1e88e5; color: white;
       border: none; border-radius: 5px;
       font-weight: bold;
+      cursor: pointer;
+    }
+    .logout {
+      float: right;
+      background: red;
+      margin-top: -50px;
     }
     .preview {
       margin-top: 25px;
@@ -31,14 +37,28 @@
       background: #222;
       border-radius: 6px;
       overflow: hidden;
+      position: relative;
       text-align: center;
     }
     .card img {
-      width: 100%; border-radius: 6px 6px 0 0;
+      width: 100%;
     }
     .card-title {
       padding: 8px;
       font-size: 13px;
+    }
+    .card .action {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      background: rgba(0,0,0,0.6);
+      border-radius: 4px;
+      padding: 2px 5px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .card .edit {
+      right: 24px;
     }
   </style>
 </head>
@@ -51,6 +71,7 @@
 </script>
 
 <h2>🎬 Troop Admin Panel</h2>
+<button class="logout" onclick="logout()">Logout</button>
 
 <label>Search Movie Title</label>
 <input id="searchInput" type="text" placeholder="e.g. John Wick"/>
@@ -65,13 +86,15 @@
 <label>Type</label><input id="type" readonly />
 <label>Video URL</label><input id="url" placeholder="https://..." />
 
-<button onclick="addMovie()">Add Movie to Homepage</button>
+<button onclick="addMovie()">Add / Update Movie</button>
 
 <h3>🗂️ Preview Added Movies:</h3>
 <div class="preview" id="previewList"></div>
 
 <script>
-  const TMDB_KEY = "YOUR_TMDB_API_KEY"; // 🔑 Replace with your TMDb key
+  const TMDB_KEY = "YOUR_TMDB_API_KEY"; // Replace with your TMDb key
+
+  let editIndex = -1;
 
   async function searchTMDB() {
     const query = document.getElementById("searchInput").value;
@@ -104,25 +127,63 @@
       type: type.value,
       url: url.value
     };
-    const existing = JSON.parse(localStorage.getItem("movies") || "[]");
-    existing.push(movie);
-    localStorage.setItem("movies", JSON.stringify(existing));
-    alert("✅ Movie added to homepage!");
+    let list = JSON.parse(localStorage.getItem("movies") || "[]");
+    if (editIndex >= 0) {
+      list[editIndex] = movie;
+      editIndex = -1;
+    } else {
+      list.push(movie);
+    }
+    localStorage.setItem("movies", JSON.stringify(list));
+    alert("✅ Movie saved to homepage!");
     loadPreview();
+    clearForm();
   }
 
   function loadPreview() {
     const list = JSON.parse(localStorage.getItem("movies") || "[]");
     const out = document.getElementById("previewList");
     out.innerHTML = "";
-    list.forEach(movie => {
+    list.forEach((movie, index) => {
       out.innerHTML += `
         <div class="card">
           <img src="${movie.poster}" />
           <div class="card-title">${movie.title}</div>
+          <div class="action delete" onclick="deleteMovie(${index})">❌</div>
+          <div class="action edit" onclick="editMovie(${index})">✏️</div>
         </div>
       `;
     });
+  }
+
+  function deleteMovie(index) {
+    if (confirm("Delete this movie?")) {
+      let list = JSON.parse(localStorage.getItem("movies") || "[]");
+      list.splice(index, 1);
+      localStorage.setItem("movies", JSON.stringify(list));
+      loadPreview();
+    }
+  }
+
+  function editMovie(index) {
+    const list = JSON.parse(localStorage.getItem("movies") || "[]");
+    const movie = list[index];
+    poster.value = movie.poster;
+    title.value = movie.title;
+    year.value = movie.year;
+    type.value = movie.type;
+    url.value = movie.url;
+    editIndex = index;
+    alert("Now editing. Click 'Add / Update Movie' to save changes.");
+  }
+
+  function logout() {
+    localStorage.removeItem("admin_login");
+    location.href = "login.html";
+  }
+
+  function clearForm() {
+    ["poster", "title", "year", "type", "url"].forEach(id => document.getElementById(id).value = "");
   }
 
   window.onload = loadPreview;
