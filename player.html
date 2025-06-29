@@ -27,8 +27,34 @@
       position: relative; background: rgba(0, 0, 0, 0.6);
       display: flex; flex-direction: column; padding: 8px 12px;
     }
+    .progress-container {
+      position: relative;
+      height: 6px; width: 100%; background: #444;
+      border-radius: 3px; cursor: pointer;
+    }
+    .progress-bar {
+      height: 6px; background: #1e88e5;
+      border-radius: 3px; width: 0%;
+    }
+    .progress-knob {
+      position: absolute;
+      top: -5px;
+      width: 16px;
+      height: 16px;
+      background: #fff;
+      border-radius: 50%;
+      transform: translateX(-50%);
+      pointer-events: auto;
+      cursor: grab;
+    }
+    .tooltip {
+      position: absolute; bottom: 100%; transform: translateX(-50%);
+      font-size: 11px; background: #000; color: #fff;
+      padding: 2px 6px; border-radius: 3px; white-space: nowrap;
+      display: none;
+    }
     .control-row {
-      display: flex; justify-content: space-between; align-items: center; margin-top: 8px;
+      display: flex; justify-content: space-between; align-items: center; margin-top: 10px;
     }
     .control-left, .control-right {
       display: flex; align-items: center; gap: 12px;
@@ -36,19 +62,8 @@
     .controls img {
       width: 24px; height: 24px; filter: brightness(0) invert(1); cursor: pointer;
     }
-    .progress-container {
-      height: 6px; width: 100%; background: #444;
-      border-radius: 3px; cursor: pointer; position: relative;
-    }
-    .progress-bar {
-      height: 6px; background: #1e88e5;
-      border-radius: 3px; width: 0%;
-    }
-    .tooltip {
-      position: absolute; bottom: 100%; transform: translateX(-50%);
-      font-size: 11px; background: #000; color: #fff;
-      padding: 2px 6px; border-radius: 3px; white-space: nowrap;
-      display: none; pointer-events: none;
+    .time-display {
+      margin-top: 8px; font-size: 14px;
     }
     .info {
       padding: 15px;
@@ -60,9 +75,6 @@
       background: #1e88e5; border: none; color: white;
       padding: 8px 14px; border-radius: 5px;
       font-size: 14px; margin-top: 12px; cursor: pointer;
-    }
-    .time-display {
-      margin-top: 8px; font-size: 14px;
     }
   </style>
 </head>
@@ -82,8 +94,9 @@
   </video>
 
   <div class="controls">
-    <div class="progress-container" onclick="seek(event)" onmousemove="showTooltip(event)" onmouseleave="hideTooltip()" id="progressContainer">
+    <div class="progress-container" id="progressContainer">
       <div class="progress-bar" id="progressBar"></div>
+      <div class="progress-knob" id="progressKnob"></div>
       <div class="tooltip" id="tooltip"></div>
     </div>
     <div class="control-row">
@@ -112,115 +125,119 @@
 </div>
 
 <script>
-  const $ = id => document.getElementById(id);
-  const player = $("player");
-  const videoSource = $("videoSource");
-  const progressBar = $("progressBar");
-  const tooltip = $("tooltip");
-  const currentTimeDisplay = $("currentTime");
-  const totalTimeDisplay = $("totalTime");
+const $ = id => document.getElementById(id);
+const player = $("player");
+const p = new URLSearchParams(location.search);
+const url = decodeURIComponent(p.get("url") || "");
+const title = decodeURIComponent(p.get("title") || "Unknown Title");
+const desc = decodeURIComponent(p.get("desc") || "No description.");
+const cast = decodeURIComponent(p.get("cast") || "Unknown");
+const year = decodeURIComponent(p.get("year") || "");
+const type = decodeURIComponent(p.get("type") || "");
+const poster = decodeURIComponent(p.get("poster") || "");
 
-  const p = new URLSearchParams(location.search);
-  const url = decodeURIComponent(p.get("url") || "");
-  const title = decodeURIComponent(p.get("title") || "Unknown Title");
-  const desc = decodeURIComponent(p.get("desc") || "No description.");
-  const cast = decodeURIComponent(p.get("cast") || "Unknown");
-  const year = decodeURIComponent(p.get("year") || "");
-  const type = decodeURIComponent(p.get("type") || "");
-  const poster = decodeURIComponent(p.get("poster") || "");
+$("videoSource").src = url;
+$("titleText").innerText = title;
+$("movieTitle").innerText = title;
+$("metaText").innerText = `${year} · ${type}`;
+$("descText").innerText = desc;
+$("castText").innerText = cast;
+$("bgPoster").style.backgroundImage = `url('${poster}')`;
+player.poster = poster;
 
-  if (url) videoSource.src = url;
-  else alert("❌ No video URL provided.");
+const playBtn = $("playBtn"), volumeBtn = $("volumeBtn"), fullscreenBtn = $("fullscreenBtn");
+const progressBar = $("progressBar"), tooltip = $("tooltip");
+const knob = $("progressKnob"), progressContainer = $("progressContainer");
+const currentTimeDisplay = $("currentTime"), totalTimeDisplay = $("totalTime");
 
-  $("titleText").innerText = title;
-  $("movieTitle").innerText = title;
-  $("metaText").innerText = `${year} · ${type}`;
-  $("descText").innerText = desc;
-  $("castText").innerText = cast;
-  $("bgPoster").style.backgroundImage = `url('${poster}')`;
-  player.poster = poster;
+const storageKey = "player_" + btoa(url);
+player.currentTime = parseFloat(localStorage.getItem(storageKey)) || 0;
 
-  const playBtn = $("playBtn");
-  const volumeBtn = $("volumeBtn");
-  const fullscreenBtn = $("fullscreenBtn");
+function formatTime(t) {
+  const m = Math.floor(t / 60);
+  const s = Math.floor(t % 60).toString().padStart(2, "0");
+  return `${m}:${s}`;
+}
 
-  const storageKey = "player_" + btoa(url);
-  player.currentTime = parseFloat(localStorage.getItem(storageKey)) || 0;
-
-  function togglePlay() {
-    if (player.paused) {
-      player.play();
-      playBtn.src = "https://cdn-icons-png.flaticon.com/512/1214/1214679.png";
-    } else {
-      player.pause();
-      playBtn.src = "https://cdn-icons-png.flaticon.com/512/2088/2088569.png";
-    }
-  }
-
-  function toggleMute() {
-    player.muted = !player.muted;
-    volumeBtn.src = player.muted
-      ? "https://cdn-icons-png.flaticon.com/512/4546/4546899.png"
-      : "https://cdn-icons-png.flaticon.com/512/565/565296.png";
-  }
-
-  function toggleFullscreen() {
-    if (!document.fullscreenElement) {
-      player.requestFullscreen();
-      fullscreenBtn.src = "https://cdn-icons-png.flaticon.com/512/3502/3502504.png";
-    } else {
-      document.exitFullscreen();
-      fullscreenBtn.src = "https://cdn-icons-png.flaticon.com/512/3354/3354155.png";
-    }
-  }
-
-  function skip(s) {
-    player.currentTime += s;
-  }
-
-  function seek(e) {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const percent = (e.clientX - rect.left) / rect.width;
-    player.currentTime = percent * player.duration;
-  }
-
-  function showTooltip(e) {
-    const rect = $("progressContainer").getBoundingClientRect();
-    const percent = (e.clientX - rect.left) / rect.width;
-    const time = percent * player.duration;
-    tooltip.innerText = formatTime(time);
-    tooltip.style.left = `${e.clientX - rect.left}px`;
-    tooltip.style.display = "block";
-  }
-
-  function hideTooltip() {
-    tooltip.style.display = "none";
-  }
-
-  function formatTime(t) {
-    const m = Math.floor(t / 60);
-    const s = Math.floor(t % 60).toString().padStart(2, "0");
-    return `${m}:${s}`;
-  }
-
-  function copyLink() {
-    navigator.clipboard.writeText(location.href).then(() => alert("🔗 Link copied!"));
-  }
-
-  player.addEventListener("timeupdate", () => {
-    const percent = (player.currentTime / player.duration) * 100;
-    progressBar.style.width = percent + "%";
-    currentTimeDisplay.innerText = formatTime(player.currentTime);
-    localStorage.setItem(storageKey, player.currentTime);
-  });
-
-  player.addEventListener("loadedmetadata", () => {
-    totalTimeDisplay.innerText = formatTime(player.duration);
-  });
-
-  player.addEventListener("ended", () => {
+function togglePlay() {
+  if (player.paused) {
+    player.play();
+    playBtn.src = "https://cdn-icons-png.flaticon.com/512/1214/1214679.png";
+  } else {
+    player.pause();
     playBtn.src = "https://cdn-icons-png.flaticon.com/512/2088/2088569.png";
-  });
+  }
+}
+
+function toggleMute() {
+  player.muted = !player.muted;
+  volumeBtn.src = player.muted
+    ? "https://cdn-icons-png.flaticon.com/512/4546/4546899.png"
+    : "https://cdn-icons-png.flaticon.com/512/565/565296.png";
+}
+
+function toggleFullscreen() {
+  if (!document.fullscreenElement) {
+    player.requestFullscreen();
+    fullscreenBtn.src = "https://cdn-icons-png.flaticon.com/512/3502/3502504.png";
+  } else {
+    document.exitFullscreen();
+    fullscreenBtn.src = "https://cdn-icons-png.flaticon.com/512/3354/3354155.png";
+  }
+}
+
+function skip(sec) {
+  player.currentTime += sec;
+}
+
+function updateUI() {
+  const percent = (player.currentTime / player.duration) * 100;
+  progressBar.style.width = percent + "%";
+  knob.style.left = percent + "%";
+  currentTimeDisplay.innerText = formatTime(player.currentTime);
+  localStorage.setItem(storageKey, player.currentTime);
+}
+
+player.addEventListener("timeupdate", updateUI);
+player.addEventListener("loadedmetadata", () => {
+  totalTimeDisplay.innerText = formatTime(player.duration);
+});
+player.addEventListener("ended", () => {
+  playBtn.src = "https://cdn-icons-png.flaticon.com/512/2088/2088569.png";
+});
+
+progressContainer.addEventListener("click", e => {
+  const rect = progressContainer.getBoundingClientRect();
+  const percent = (e.clientX - rect.left) / rect.width;
+  player.currentTime = percent * player.duration;
+});
+
+progressContainer.addEventListener("mousemove", e => {
+  const rect = progressContainer.getBoundingClientRect();
+  const percent = (e.clientX - rect.left) / rect.width;
+  tooltip.innerText = formatTime(percent * player.duration);
+  tooltip.style.left = `${e.clientX - rect.left}px`;
+  tooltip.style.display = "block";
+});
+
+progressContainer.addEventListener("mouseleave", () => {
+  tooltip.style.display = "none";
+});
+
+let dragging = false;
+
+knob.addEventListener("mousedown", () => dragging = true);
+document.addEventListener("mouseup", () => dragging = false);
+document.addEventListener("mousemove", e => {
+  if (!dragging) return;
+  const rect = progressContainer.getBoundingClientRect();
+  const percent = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+  player.currentTime = percent * player.duration;
+});
+
+function copyLink() {
+  navigator.clipboard.writeText(location.href).then(() => alert("🔗 Link copied!"));
+}
 </script>
 
 </body>
