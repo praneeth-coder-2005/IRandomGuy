@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Troop Originals</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -124,6 +124,8 @@
       flex-shrink: 0;
       width: 110px;
       position: relative;
+      text-decoration: none;
+      color: white;
     }
     .featured-item img {
       width: 100%;
@@ -166,18 +168,18 @@
 
   <!-- Slider -->
   <div class="slider-container" id="slider">
-    <div class="slide">
+    <a class="slide" href="player.html?video=https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4">
       <img src="https://image.tmdb.org/t/p/w500/8kpJ8DqHcREvumeWpMjJcsPMgVA.jpg" />
       <div class="slide-title">FURIOSA: A MAD MAX SAGA</div>
       <div class="slide-year">2024</div>
       <div class="slide-tag">MOVIE</div>
-    </div>
-    <div class="slide">
+    </a>
+    <a class="slide" href="player.html?video=https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4">
       <img src="https://image.tmdb.org/t/p/w500/t5zCBSB5xMDKcDqe91qahCOUYVV.jpg" />
       <div class="slide-title">SERIAL EXPERIMENTS LAIN</div>
       <div class="slide-year">1998</div>
       <div class="slide-tag">TV</div>
-    </div>
+    </a>
   </div>
 
   <!-- Dots -->
@@ -189,21 +191,21 @@
   <!-- Featured Titles -->
   <div class="section-title">Featured titles</div>
   <div class="featured-row">
-    <div class="featured-item">
+    <a class="featured-item" href="player.html?video=https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4">
       <img src="https://image.tmdb.org/t/p/w500/a4Z6fNse5WbiKXc2gErlKvKMCXV.jpg" />
       <div class="featured-label">FEATURED</div>
       <div class="featured-name">Kuberaa (2025)</div>
-    </div>
-    <div class="featured-item">
+    </a>
+    <a class="featured-item" href="player.html?video=https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4">
       <img src="https://image.tmdb.org/t/p/w500/wzJAk5wnFkrb7zIguMLPnVft9E8.jpg" />
       <div class="featured-label">FEATURED</div>
       <div class="featured-name">Blind Spot (2025)</div>
-    </div>
-    <div class="featured-item">
+    </a>
+    <a class="featured-item" href="player.html?video=https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4">
       <img src="https://image.tmdb.org/t/p/w500/vBZ0qvaRxqEhZwl6LWmruJqWE8Z.jpg" />
       <div class="featured-label">FEATURED</div>
       <div class="featured-name">Devil's Double Next Level</div>
-    </div>
+    </a>
   </div>
 
   <script>
@@ -216,7 +218,7 @@
       for (let i = 0; i < dots.length; i++) {
         dots[i].classList.remove('active');
       }
-      dots[index].classList.add('active');
+      if (dots[index]) dots[index].classList.add('active');
     }
 
     function goToSlide(index) {
@@ -241,6 +243,5 @@
       }
     });
   </script>
-
 </body>
 </html>
