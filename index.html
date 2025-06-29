@@ -1,231 +1,198 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
   <title>Troop Originals</title>
-  <link href="https://fonts.googleapis.com/css2?family=Russo+One&display=swap" rel="stylesheet"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css"/>
   <style>
     body {
       margin: 0;
-      font-family: 'Russo One', sans-serif;
       background-color: #111;
       color: white;
+      font-family: 'Segoe UI', sans-serif;
     }
-    header {
-      background-color: #000;
+
+    .header {
       display: flex;
-      align-items: center;
       justify-content: space-between;
-      padding: 10px 16px;
-    }
-    .logo {
-      display: flex;
       align-items: center;
-      gap: 10px;
+      background: #000;
+      padding: 10px 15px;
     }
-    .logo img {
-      height: 30px;
+
+    .header img {
+      height: 40px;
     }
-    .menu, .search {
-      font-size: 28px;
+
+    .header .menu,
+    .header .search {
+      font-size: 24px;
       color: white;
       cursor: pointer;
     }
-    .slider {
+
+    .swiper {
+      width: 100%;
+      height: 220px;
+    }
+
+    .swiper-slide {
       position: relative;
+      border-radius: 8px;
       overflow: hidden;
     }
-    .slider img {
+
+    .swiper-slide img {
       width: 100%;
-      height: auto;
-      display: block;
+      height: 100%;
+      object-fit: cover;
     }
-    .slide-info {
-      position: absolute;
-      bottom: 20px;
-      left: 20px;
-      text-shadow: 1px 1px 5px #000;
-    }
+
     .slide-title {
-      font-size: 24px;
-    }
-    .slide-year {
-      font-size: 16px;
-    }
-    .type-label {
       position: absolute;
-      right: 20px;
+      bottom: 40px;
+      left: 10px;
+      font-size: 18px;
+      font-weight: bold;
+      color: white;
+      text-shadow: 0 0 5px black;
+    }
+
+    .slide-year {
+      position: absolute;
       bottom: 20px;
-      background-color: #1e90ff;
-      padding: 5px 10px;
+      left: 10px;
       font-size: 14px;
+      color: #ccc;
+    }
+
+    .slide-type {
+      position: absolute;
+      bottom: 20px;
+      right: 10px;
+      background: #2196F3;
+      padding: 2px 8px;
+      font-size: 12px;
       border-radius: 3px;
+      color: white;
     }
-    .dots {
-      text-align: center;
-      padding: 10px 0;
-    }
-    .dot {
-      display: inline-block;
-      width: 10px;
-      height: 10px;
-      margin: 0 5px;
-      background: #777;
-      border-radius: 50%;
-    }
-    .dot.active {
-      background: white;
-    }
-    .featured-section {
-      padding: 0 16px;
-    }
-    .featured-section h2 {
-      border-left: 4px solid #1e90ff;
+
+    .section-title {
+      margin: 20px 15px 10px;
+      font-size: 20px;
+      font-weight: bold;
+      border-left: 4px solid #2196F3;
       padding-left: 10px;
-      margin-bottom: 10px;
     }
+
     .featured-row {
       display: flex;
-      gap: 10px;
       overflow-x: auto;
-      padding-bottom: 20px;
+      padding: 0 10px;
+      gap: 10px;
     }
-    .card {
-      min-width: 140px;
+
+    .featured-card {
       background: #222;
-      border-radius: 6px;
+      flex: 0 0 auto;
+      width: 120px;
+      border-radius: 8px;
       overflow: hidden;
-      flex-shrink: 0;
+      position: relative;
+      cursor: pointer;
     }
-    .card img {
+
+    .featured-card img {
       width: 100%;
-      height: auto;
-      display: block;
+      height: 160px;
+      object-fit: cover;
     }
-    .card .title {
-      padding: 8px;
-      font-size: 14px;
-      font-style: italic;
-    }
+
     .featured-badge {
       position: absolute;
+      top: 5px;
+      left: 5px;
       background: green;
       color: white;
       font-size: 10px;
-      padding: 3px 5px;
-      top: 5px;
-      left: 5px;
+      padding: 2px 5px;
+      border-radius: 3px;
+    }
+
+    .featured-title {
+      padding: 5px 6px;
+      font-size: 14px;
+      font-style: italic;
+    }
+
+    .featured-row::-webkit-scrollbar {
+      height: 5px;
+    }
+
+    .featured-row::-webkit-scrollbar-thumb {
+      background: #333;
       border-radius: 3px;
     }
   </style>
 </head>
 <body>
 
-<header>
-  <div class="menu" onclick="toggleMenu()">☰</div>
-  <div class="logo">
-    <img src="https://i.imgur.com/QwlXs4F.png" alt="logo"/>
-    <span>TROOP ORIGINALS</span>
+  <div class="header">
+    <div class="menu">&#9776;</div>
+    <img src="https://i.imgur.com/dSU3Ysp.png" alt="Troop Originals">
+    <div class="search">&#128269;</div>
   </div>
-  <div class="search">🔍</div>
-</header>
 
-<div id="sliderContainer" class="slider"></div>
-<div class="dots" id="sliderDots"></div>
+  <div class="swiper" id="slider-wrapper">
+    <div class="swiper-wrapper" id="swiper-slides">
+      <!-- Slides injected here -->
+    </div>
+    <div class="swiper-pagination"></div>
+  </div>
 
-<div class="featured-section">
-  <h2>Featured Titles</h2>
-  <div class="featured-row" id="featuredList"></div>
-</div>
+  <div class="section-title">Featured Titles</div>
+  <div class="featured-row" id="featured-row">
+    <!-- Cards injected here -->
+  </div>
 
-<script>
-  const data = JSON.parse(localStorage.getItem("movies") || "[]");
+  <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
+  <script>
+    const movies = JSON.parse(localStorage.getItem('movies') || '[]');
+    const swiperWrapper = document.getElementById('swiper-slides');
+    const featuredRow = document.getElementById('featured-row');
 
-  // --- SLIDER SETUP ---
-  let currentSlide = 0;
-  function loadSlider() {
-    const slider = document.getElementById("sliderContainer");
-    const dots = document.getElementById("sliderDots");
-    slider.innerHTML = "";
-    dots.innerHTML = "";
-    if (data.length === 0) return;
-
-    const slide = data[currentSlide];
-    const img = document.createElement("img");
-    img.src = slide.poster || "https://via.placeholder.com/600x300?text=No+Image";
-    img.alt = slide.title;
-    img.onclick = () => {
-      window.location.href = `player.html?url=${encodeURIComponent(slide.url)}`;
-    };
-
-    const info = document.createElement("div");
-    info.className = "slide-info";
-    info.innerHTML = `
-      <div class="slide-title">${slide.title}</div>
-      <div class="slide-year">${slide.year || ""}</div>
-    `;
-
-    const type = document.createElement("div");
-    type.className = "type-label";
-    type.innerText = slide.type?.toUpperCase() || "MOVIE";
-
-    const container = document.createElement("div");
-    container.style.position = "relative";
-    container.appendChild(img);
-    container.appendChild(info);
-    container.appendChild(type);
-    slider.appendChild(container);
-
-    for (let i = 0; i < data.length; i++) {
-      const dot = document.createElement("span");
-      dot.className = "dot" + (i === currentSlide ? " active" : "");
-      dot.onclick = () => {
-        currentSlide = i;
-        loadSlider();
-      };
-      dots.appendChild(dot);
-    }
-
-    setTimeout(() => {
-      currentSlide = (currentSlide + 1) % data.length;
-      loadSlider();
-    }, 4000);
-  }
-
-  // --- FEATURED SECTION ---
-  function loadFeatured() {
-    const container = document.getElementById("featuredList");
-    container.innerHTML = "";
-    for (const movie of data) {
-      if (!movie.poster || !movie.title) continue;
-
-      const card = document.createElement("div");
-      card.className = "card";
-      card.onclick = () => {
-        window.location.href = `player.html?url=${encodeURIComponent(movie.url)}`;
-      };
-
-      card.innerHTML = `
-        <div style="position:relative">
-          <span class="featured-badge">FEATURED</span>
-          <img src="${movie.poster}" alt="${movie.title}" />
-        </div>
-        <div class="title">${movie.title} (${movie.year || ""})</div>
+    movies.forEach(movie => {
+      // Slider
+      const slide = document.createElement('div');
+      slide.className = 'swiper-slide';
+      slide.innerHTML = `
+        <img src="${movie.poster}" />
+        <div class="slide-title">${movie.title}</div>
+        <div class="slide-year">${movie.year}</div>
+        <div class="slide-type">MOVIE</div>
       `;
-      container.appendChild(card);
-    }
-  }
+      slide.onclick = () => window.location.href = `player.html?url=${encodeURIComponent(movie.url)}`;
+      swiperWrapper.appendChild(slide);
 
-  function toggleMenu() {
-    if (confirm("Open admin panel?")) {
-      window.location.href = "login.html";
-    }
-  }
+      // Featured row
+      const card = document.createElement('div');
+      card.className = 'featured-card';
+      card.innerHTML = `
+        <img src="${movie.poster}" />
+        <div class="featured-badge">FEATURED</div>
+        <div class="featured-title">${movie.title} (${movie.year})</div>
+      `;
+      card.onclick = () => window.location.href = `player.html?url=${encodeURIComponent(movie.url)}`;
+      featuredRow.appendChild(card);
+    });
 
-  loadSlider();
-  loadFeatured();
-</script>
+    new Swiper('.swiper', {
+      loop: true,
+      autoplay: { delay: 3000 },
+      pagination: { el: '.swiper-pagination' }
+    });
+  </script>
 
 </body>
 </html>
