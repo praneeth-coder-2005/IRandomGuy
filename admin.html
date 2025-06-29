@@ -2,97 +2,109 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Admin Panel with TMDB Search</title>
+  <title>Admin Panel</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
-    body { background: #121212; color: #fff; font-family: Arial, sans-serif; padding: 20px; }
-    h1 { text-align: center; color: #1e88e5; }
-    label { display: block; margin-top: 15px; font-weight: bold; }
-    input, select { width: 100%; padding: 10px; margin-top: 5px; background: #1e1e1e; border: none; color: #fff; border-radius: 5px; }
-    button { background: #1e88e5; color: white; padding: 10px; border: none; margin-top: 20px; width: 100%; border-radius: 5px; cursor: pointer; font-weight: bold; }
-    .preview-grid { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 30px; }
-    .card { background: #1c1c1c; padding: 10px; border-radius: 8px; width: 140px; text-align: center; }
-    .card img { width: 100%; border-radius: 6px; }
-    .card-title { margin: 5px 0; font-size: 14px; font-weight: 500; }
-    .card-year { font-size: 12px; color: #aaa; }
+    body { background: #121212; color: #fff; font-family: Arial; padding: 20px; }
+    input, select {
+      width: 100%; padding: 10px; background: #1e1e1e; border: none; color: white; border-radius: 5px;
+      margin-top: 5px;
+    }
+    label { margin-top: 10px; display: block; }
+    button {
+      width: 100%; background: #1e88e5; padding: 10px; margin-top: 15px;
+      border: none; border-radius: 5px; color: white; font-weight: bold; cursor: pointer;
+    }
+    .preview-grid {
+      margin-top: 30px; display: flex; gap: 12px; flex-wrap: wrap;
+    }
+    .card {
+      background: #1c1c1c; padding: 10px; border-radius: 6px; width: 140px; text-align: center;
+    }
+    .card img { width: 100%; border-radius: 5px; }
+    .card a { color: white; text-decoration: none; }
   </style>
 </head>
 <body>
-  <h1>Troop Admin Panel</h1>
-  <label>Search Title (TMDB)</label>
-  <input type="text" id="searchText" placeholder="e.g., Inception" />
-  <button onclick="searchTMDB()">Search TMDB</button>
 
-  <label>Choose Result:</label>
-  <select id="tmdbResults"><option value="">-- No results --</option></select>
-
-  <label>Poster URL</label><input type="text" id="poster" readonly />
-  <label>Movie Title</label><input type="text" id="title" readonly />
-  <label>Year</label><input type="text" id="year" readonly />
-  <label>Tag (Movie / TV / Featured)</label><input type="text" id="tag" placeholder="e.g., MOVIE" />
-  <label>Video URL</label><input type="text" id="video" placeholder="Your video file link" />
-
-  <button onclick="addMovie()">Add Movie</button>
-
-  <h2>Preview</h2><div class="preview-grid" id="preview"></div>
-
-  <script>
-    <script>
+<script>
   if (localStorage.getItem("admin_login") !== "true") {
-    window.location.href = "login.html";
+    location.href = "login.html";
   }
 </script>
-    const TMDB_KEY = 'bb5f40c5be4b24660cbdc20c2409835e'; // ← Replace with your TMDB API key
-    const preview = document.getElementById('preview');
-    const sel = document.getElementById('tmdbResults');
 
-    async function searchTMDB() {
-      const q = document.getElementById('searchText').value.trim();
-      if (!q) return alert('Enter search');
-      const res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${TMDB_KEY}&language=en-US&query=${encodeURIComponent(q)}`);
-      const json = await res.json();
-      sel.innerHTML = `<option value="">-- Select movie/show --</option>`;
-      json.results.forEach(r => {
-        sel.innerHTML += `<option value="${r.id}|${r.media_type}">${r.title||r.name} (${(r.release_date||r.first_air_date||'').slice(0,4)})</option>`;
-      });
-    }
+<h1>Troop Admin Panel</h1>
+<label>Search Title (TMDB)</label>
+<input type="text" id="searchText" />
+<button onclick="searchTMDB()">Search TMDB</button>
 
-    sel.onchange = async () => {
-      const val = sel.value;
-      if (!val) return;
-      const [id, type] = val.split('|');
-      const res = await fetch(`https://api.themoviedb.org/3/${type}/${id}?api_key=${TMDB_KEY}&language=en-US`);
-      const j = await res.json();
-      document.getElementById('poster').value = `https://image.tmdb.org/t/p/w500${j.poster_path}`;
-      document.getElementById('title').value = j.title||j.name;
-      document.getElementById('year').value = (j.release_date||j.first_air_date||'').slice(0,4);
-      document.getElementById('tag').value = type.toUpperCase();
+<label>Choose Result:</label>
+<select id="tmdbResults"><option value="">-- Select movie --</option></select>
+
+<label>Poster URL</label><input type="text" id="poster" readonly />
+<label>Title</label><input type="text" id="title" readonly />
+<label>Year</label><input type="text" id="year" readonly />
+<label>Tag</label><input type="text" id="tag" />
+<label>Video URL</label><input type="text" id="video" />
+<button onclick="addMovie()">Add Movie</button>
+
+<div class="preview-grid" id="preview"></div>
+
+<script>
+  const TMDB_KEY = 'YOUR_TMDB_API_KEY'; // Replace with your TMDB API key
+  const sel = document.getElementById("tmdbResults");
+
+  async function searchTMDB() {
+    const q = document.getElementById("searchText").value.trim();
+    const res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${TMDB_KEY}&query=${q}`);
+    const j = await res.json();
+    sel.innerHTML = `<option value="">-- Select --</option>`;
+    j.results.forEach(r => {
+      sel.innerHTML += `<option value="${r.id}|${r.media_type}">${r.title||r.name}</option>`;
+    });
+  }
+
+  sel.onchange = async () => {
+    const [id, type] = sel.value.split('|');
+    const res = await fetch(`https://api.themoviedb.org/3/${type}/${id}?api_key=${TMDB_KEY}`);
+    const j = await res.json();
+    poster.value = `https://image.tmdb.org/t/p/w500${j.poster_path}`;
+    title.value = j.title || j.name;
+    year.value = (j.release_date || j.first_air_date || '').slice(0,4);
+    tag.value = type.toUpperCase();
+  }
+
+  function loadMovies() {
+    const data = JSON.parse(localStorage.getItem("troop_movies") || "[]");
+    const preview = document.getElementById("preview");
+    preview.innerHTML = '';
+    data.forEach(m => {
+      preview.innerHTML += `
+        <div class="card">
+          <a href="player.html?video=${encodeURIComponent(m.video)}">
+            <img src="${m.poster}" />
+            <div>${m.title}</div><div>${m.year}</div>
+          </a>
+        </div>`;
+    });
+  }
+
+  function addMovie() {
+    const movie = {
+      poster: poster.value,
+      title: title.value,
+      year: year.value,
+      tag: tag.value,
+      video: video.value
     };
+    const arr = JSON.parse(localStorage.getItem("troop_movies") || "[]");
+    arr.push(movie);
+    localStorage.setItem("troop_movies", JSON.stringify(arr));
+    loadMovies();
+    alert("Movie added!");
+  }
 
-    function loadMovies() {
-      preview.innerHTML = '';
-      const arr = JSON.parse(localStorage.getItem('troop_movies')||'[]');
-      arr.forEach(m => {
-        const c = document.createElement('div'); c.className = 'card';
-        c.innerHTML = `<a href="player.html?video=${encodeURIComponent(m.video)}">
-          <img src="${m.poster}"/><div class="card-title">${m.title}</div><div class="card-year">${m.year}</div>
-        </a>`;
-        preview.appendChild(c);
-      });
-    }
-
-    function addMovie() {
-      const p = poster.value, t = title.value, y = year.value, tag = tag.value.trim(), v = video.value.trim();
-      if (!p||!t||!y||!v) return alert('Fill all fields');
-      const arr = JSON.parse(localStorage.getItem('troop_movies')||'[]');
-      arr.push({poster:p,title:t,year:y,tag,video:v});
-      localStorage.setItem('troop_movies', JSON.stringify(arr));
-      loadMovies();
-      video.value = '';
-      alert('Saved!');
-    }
-
-    window.onload = loadMovies;
-  </script>
+  window.onload = loadMovies;
+</script>
 </body>
 </html>
