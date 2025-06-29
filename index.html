@@ -5,7 +5,6 @@
   <title>Troop Originals</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css"/>
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     body {
       margin: 0;
@@ -31,10 +30,6 @@
       font-size: 24px;
       color: white;
       cursor: pointer;
-    }
-
-    .menu {
-      display: none;
     }
 
     .swiper {
@@ -173,7 +168,7 @@
 <body>
 
   <div class="header">
-    <div class="menu" id="adminMenu">&#9776;</div>
+    <div class="menu" onclick="window.location.href='login.html'">&#9776;</div>
     <img src="https://i.imgur.com/dSU3Ysp.png" alt="Troop Originals">
     <div class="search">&#128269;</div>
   </div>
@@ -203,7 +198,6 @@
     const featuredRow = document.getElementById('featured-row');
     const allGrid = document.getElementById('all-grid');
 
-    // Load slider + featured
     async function loadMovies() {
       const { data: movies, error } = await supabase
         .from('Movies')
@@ -244,7 +238,6 @@
       });
     }
 
-    // Infinite scroll for All Movies
     let page = 0;
     const pageSize = 12;
     let loading = false;
@@ -260,7 +253,7 @@
         .range(page * pageSize, (page + 1) * pageSize - 1);
 
       if (error) return console.error("All grid error", error);
-      if (data.length === 0) return; // No more movies
+      if (data.length === 0) return;
 
       data.forEach(movie => {
         const box = document.createElement("div");
@@ -283,17 +276,6 @@
       }
     });
 
-    // Show ☰ only for your Telegram ID
-    try {
-      const tgUserId = window.Telegram.WebApp.initDataUnsafe?.user?.id;
-      if (tgUserId === 1894915577) {
-        const menu = document.getElementById("adminMenu");
-        menu.style.display = "block";
-        menu.onclick = () => window.location.href = "admin.html";
-      }
-    } catch (err) {}
-
-    // Run initial loaders
     loadMovies();
     loadAllMovies();
   </script>
