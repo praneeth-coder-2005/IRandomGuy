@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Custom JW-Style Player</title>
+  <title>Custom Player with Skip</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     body {
@@ -49,7 +49,6 @@
       width: 100%;
       height: auto;
     }
-
     .controls {
       position: absolute;
       left: 0;
@@ -62,24 +61,20 @@
       padding: 8px 12px;
       z-index: 999;
     }
-
     .control-left, .control-right {
       display: flex;
       align-items: center;
       gap: 12px;
     }
-
     .controls img {
       width: 24px;
       height: 24px;
       filter: brightness(0) invert(1);
       cursor: pointer;
     }
-
     .info {
       padding: 15px;
     }
-
     .info h2 { margin: 8px 0; }
     .info .meta { font-size: 13px; color: #ccc; }
     .info p { margin-top: 10px; line-height: 1.4; }
@@ -113,9 +108,11 @@
 
   <div class="controls">
     <div class="control-left">
+      <img src="https://cdn-icons-png.flaticon.com/512/565/565242.png" alt="Back 10s" onclick="skip(-10)" />
       <img id="playBtn" src="https://cdn-icons-png.flaticon.com/512/2088/2088569.png" alt="Play" onclick="togglePlay()" />
     </div>
     <div class="control-right">
+      <img src="https://cdn-icons-png.flaticon.com/512/565/565239.png" alt="Forward 10s" onclick="skip(10)" />
       <img id="volumeBtn" src="https://cdn-icons-png.flaticon.com/512/565/565296.png" alt="Volume" onclick="toggleMute()" />
       <img id="fullscreenBtn" src="https://cdn-icons-png.flaticon.com/512/3354/3354155.png" alt="Fullscreen" onclick="toggleFullscreen()" />
     </div>
@@ -188,6 +185,10 @@
       document.exitFullscreen();
       fullscreenBtn.src = "https://cdn-icons-png.flaticon.com/512/3354/3354155.png";
     }
+  }
+
+  function skip(seconds) {
+    player.currentTime += seconds;
   }
 
   function copyLink() {
