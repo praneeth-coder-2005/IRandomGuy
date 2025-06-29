@@ -1,75 +1,88 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Troop Player</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <script src="//content.jwplatform.com/libraries/IDzF9Zmk.js"></script>
+  <meta charset="UTF-8">
+  <title>Custom Player</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
       margin: 0;
+      font-family: sans-serif;
       background: #111;
       color: white;
-      font-family: sans-serif;
-      position: relative;
       overflow-x: hidden;
     }
-    .bg-blur {
+    .blur-bg {
       position: fixed;
       top: 0; left: 0;
       width: 100%; height: 100%;
-      background-position: center;
       background-size: cover;
+      background-position: center;
       filter: blur(20px);
       opacity: 0.3;
       z-index: -1;
     }
-    .nav {
-      background: rgba(0,0,0,0.6);
-      padding: 10px 15px;
+    .video-container {
+      position: relative;
+      width: 100%;
+      max-height: 56.25vw; /* 16:9 */
+      background: black;
+    }
+    video {
+      width: 100%;
+      height: auto;
+    }
+    .controls {
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      right: 10px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      position: sticky;
-      top: 0;
-      z-index: 1000;
+      background: rgba(0,0,0,0.5);
+      padding: 8px 12px;
+      border-radius: 6px;
     }
-    .nav h2 {
-      font-size: 16px;
-      margin: 0;
-      flex: 1;
-      text-align: center;
-    }
-    .nav button {
-      background: rgba(255,255,255,0.1);
-      color: white;
+    .controls button {
+      background: none;
       border: none;
-      padding: 6px 12px;
-      border-radius: 4px;
-      font-size: 14px;
+      color: white;
+      font-size: 20px;
       cursor: pointer;
-    }
-    #my-video1 {
-      width: 100%;
-      max-height: 56.25vw;
     }
     .info {
       padding: 15px;
-      background: rgba(0,0,0,0.6);
     }
-    .info .label {
-      color: #1e88e5;
-      font-weight: bold;
-    }
-    .info .text {
-      margin: 5px 0 15px;
-    }
+    .info h2 { margin: 5px 0; font-size: 20px; }
+    .info p { font-size: 15px; margin-top: 10px; }
+    .meta { font-size: 13px; color: #aaa; }
     .share-btn {
       background: #1e88e5;
       color: white;
-      padding: 8px 14px;
       border: none;
+      padding: 10px 14px;
+      font-size: 14px;
       border-radius: 5px;
+      margin-top: 15px;
+      cursor: pointer;
+    }
+    .top-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(0,0,0,0.6);
+      padding: 10px 15px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .top-nav button {
+      background: rgba(255,255,255,0.1);
+      color: white;
+      padding: 6px 12px;
+      border: none;
+      border-radius: 4px;
       font-size: 14px;
       cursor: pointer;
     }
@@ -77,68 +90,87 @@
 </head>
 <body>
 
-<div class="bg-blur" id="blurBg"></div>
+<div class="blur-bg" id="bgPoster"></div>
 
-<div class="nav">
+<div class="top-nav">
   <button onclick="history.back()">⬅ Back</button>
-  <h2 id="titleHead">Now Playing</h2>
-  <button onclick="location.href='index.html'">🏠</button>
+  <span id="movieTitle">Now Playing</span>
+  <button onclick="location.href='index.html'">🏠 Home</button>
 </div>
 
-<div id="my-video1"></div>
+<div class="video-container">
+  <video id="player" controls poster="">
+    <source id="videoSource" src="" type="video/mp4">
+    Your browser does not support HTML5 video.
+  </video>
+  <div class="controls">
+    <button onclick="togglePlay()">⏯️</button>
+    <button onclick="toggleMute()">🔊</button>
+    <button onclick="toggleFullscreen()">⛶</button>
+  </div>
+</div>
 
 <div class="info">
-  <div class="label">📜 Description</div>
-  <div class="text" id="descText">No description</div>
-
-  <div class="label">🎭 Cast</div>
-  <div class="text" id="castText">Unknown</div>
-
-  <div class="label">📆 Year & Type</div>
-  <div class="text" id="metaText">-</div>
-
+  <h2 id="titleText">Title</h2>
+  <div class="meta" id="metaText">Year · Type</div>
+  <p id="descText">Description not available.</p>
+  <div><strong>Cast:</strong> <span id="castText">N/A</span></div>
   <button class="share-btn" onclick="copyLink()">🔗 Share</button>
 </div>
 
 <script>
-  const p = new URLSearchParams(location.search);
-  const url = p.get("url");
-  const title = decodeURIComponent(p.get("title") || "");
-  const desc = decodeURIComponent(p.get("desc") || "");
-  const cast = decodeURIComponent(p.get("cast") || "");
-  const year = decodeURIComponent(p.get("year") || "");
-  const type = decodeURIComponent(p.get("type") || "");
-  const poster = decodeURIComponent(p.get("poster") || "");
+  const params = new URLSearchParams(location.search);
+  const url = decodeURIComponent(params.get("url") || "");
+  const title = decodeURIComponent(params.get("title") || "Unknown Title");
+  const desc = decodeURIComponent(params.get("desc") || "No description");
+  const cast = decodeURIComponent(params.get("cast") || "Unknown");
+  const year = decodeURIComponent(params.get("year") || "");
+  const type = decodeURIComponent(params.get("type") || "");
+  const poster = decodeURIComponent(params.get("poster") || "");
 
-  document.getElementById("titleHead").innerText = title;
+  const player = document.getElementById("player");
+  const videoSource = document.getElementById("videoSource");
+
+  if (url) {
+    videoSource.src = url;
+    player.load();
+  } else {
+    alert("No video URL provided.");
+  }
+
+  document.getElementById("player").poster = poster;
+  document.getElementById("bgPoster").style.backgroundImage = `url('${poster}')`;
+
+  document.getElementById("titleText").innerText = title;
+  document.getElementById("movieTitle").innerText = title;
   document.getElementById("descText").innerText = desc;
   document.getElementById("castText").innerText = cast;
   document.getElementById("metaText").innerText = `${year} · ${type}`;
-  document.getElementById("blurBg").style.backgroundImage = `url(${poster})`;
 
-  if (url) {
-    jwplayer("my-video1").setup({
-      playlist: [{
-        sources: [{
-          default: true,
-          type: "mkv",
-          file: decodeURIComponent(url),
-          label: "HD"
-        }]
-      }],
-      primary: "html5",
-      hlshtml: true,
-      autostart: false
-    });
-  } else {
-    alert("Missing video URL.");
+  function togglePlay() {
+    if (player.paused) player.play();
+    else player.pause();
+  }
+
+  function toggleMute() {
+    player.muted = !player.muted;
+  }
+
+  function toggleFullscreen() {
+    const vid = document.getElementById("player");
+    if (document.fullscreenElement) {
+      document.exitFullscreen();
+    } else {
+      vid.requestFullscreen();
+    }
   }
 
   function copyLink() {
-    navigator.clipboard.writeText(location.href).then(() => {
-      alert("Link copied!");
+    navigator.clipboard.writeText(window.location.href).then(() => {
+      alert("🔗 Link copied to clipboard!");
     });
   }
 </script>
+
 </body>
-</html>
+  </html>
