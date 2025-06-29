@@ -34,7 +34,7 @@
     }
 
     .menu {
-      display: none; /* hidden by default */
+      display: none;
     }
 
     .swiper {
@@ -139,6 +139,35 @@
       background: #333;
       border-radius: 3px;
     }
+
+    .all-movies-section {
+      margin: 30px 10px;
+    }
+
+    .all-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .movie-box {
+      background: #222;
+      border-radius: 8px;
+      overflow: hidden;
+      cursor: pointer;
+    }
+
+    .movie-box img {
+      width: 100%;
+      height: 160px;
+      object-fit: cover;
+    }
+
+    .movie-box-title {
+      padding: 8px;
+      font-size: 14px;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
@@ -150,15 +179,16 @@
   </div>
 
   <div class="swiper" id="slider-wrapper">
-    <div class="swiper-wrapper" id="swiper-slides">
-      <!-- Slides injected here -->
-    </div>
+    <div class="swiper-wrapper" id="swiper-slides"></div>
     <div class="swiper-pagination"></div>
   </div>
 
   <div class="section-title">Featured Titles</div>
-  <div class="featured-row" id="featured-row">
-    <!-- Cards injected here -->
+  <div class="featured-row" id="featured-row"></div>
+
+  <div class="section-title">All Movies</div>
+  <div class="all-movies-section">
+    <div class="all-grid" id="all-grid"></div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
@@ -171,20 +201,18 @@
 
     const swiperWrapper = document.getElementById('swiper-slides');
     const featuredRow = document.getElementById('featured-row');
+    const allGrid = document.getElementById('all-grid');
 
+    // Load slider + featured
     async function loadMovies() {
       const { data: movies, error } = await supabase
         .from('Movies')
         .select('*')
         .order('year', { ascending: false });
 
-      if (error) {
-        alert("Failed to load movies from Supabase");
-        console.error(error);
-        return;
-      }
+      if (error) return console.error("Slider load error", error);
 
-      movies.forEach(movie => {
+      movies.slice(0, 5).forEach(movie => {
         const slide = document.createElement('div');
         slide.className = 'swiper-slide';
         slide.innerHTML = `
@@ -195,7 +223,9 @@
         `;
         slide.onclick = () => window.location.href = `player.html?url=${encodeURIComponent(movie.url)}`;
         swiperWrapper.appendChild(slide);
+      });
 
+      movies.slice(0, 10).forEach(movie => {
         const card = document.createElement('div');
         card.className = 'featured-card';
         card.innerHTML = `
@@ -214,9 +244,46 @@
       });
     }
 
-    loadMovies();
+    // Infinite scroll for All Movies
+    let page = 0;
+    const pageSize = 12;
+    let loading = false;
 
-    // ✅ Only show ☰ if Telegram user ID = 1894915577
+    async function loadAllMovies() {
+      if (loading) return;
+      loading = true;
+
+      const { data, error } = await supabase
+        .from("Movies")
+        .select("*")
+        .order("year", { descending: true })
+        .range(page * pageSize, (page + 1) * pageSize - 1);
+
+      if (error) return console.error("All grid error", error);
+      if (data.length === 0) return; // No more movies
+
+      data.forEach(movie => {
+        const box = document.createElement("div");
+        box.className = "movie-box";
+        box.innerHTML = `
+          <img src="${movie.poster}">
+          <div class="movie-box-title">${movie.title}</div>
+        `;
+        box.onclick = () => window.location.href = `player.html?url=${encodeURIComponent(movie.url)}`;
+        allGrid.appendChild(box);
+      });
+
+      page++;
+      loading = false;
+    }
+
+    window.addEventListener("scroll", () => {
+      if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 300) {
+        loadAllMovies();
+      }
+    });
+
+    // Show ☰ only for your Telegram ID
     try {
       const tgUserId = window.Telegram.WebApp.initDataUnsafe?.user?.id;
       if (tgUserId === 1894915577) {
@@ -224,9 +291,11 @@
         menu.style.display = "block";
         menu.onclick = () => window.location.href = "admin.html";
       }
-    } catch (err) {
-      console.warn("Telegram WebApp not available", err);
-    }
+    } catch (err) {}
+
+    // Run initial loaders
+    loadMovies();
+    loadAllMovies();
   </script>
 
 </body>
