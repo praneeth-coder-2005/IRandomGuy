@@ -1,108 +1,52 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
   <meta charset="UTF-8" />
-  <title>Video Player | Troop Originals</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <script src="https://content.jwplatform.com/libraries/IDzF9Zmk.js"></script>
+  <title>Player</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
       background-color: #000;
-      color: #fff;
-      overflow: hidden;
-      animation: fadeIn 0.6s ease;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .player-header {
-      display: flex;
-      align-items: center;
-      background: #111;
-      padding: 12px 16px;
-      border-bottom: 1px solid #222;
-    }
-
-    .back-btn {
-      background: transparent;
-      border: none;
       color: white;
-      font-size: 18px;
-      margin-right: 12px;
+      font-family: sans-serif;
+    }
+    .back-btn {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(0,0,0,0.6);
+      color: white;
+      padding: 8px 12px;
+      border-radius: 5px;
+      font-size: 14px;
+      z-index: 1000;
       cursor: pointer;
     }
-
-    .player-title {
-      font-size: 16px;
-      font-weight: bold;
-      color: #00acee;
-    }
-
-    #player {
+    video {
       width: 100%;
-      height: calc(100vh - 54px); /* 54 = header height */
-    }
-
-    @media (orientation: landscape) {
-      .player-title {
-        font-size: 18px;
-      }
+      height: 100vh;
     }
   </style>
 </head>
 <body>
 
-  <!-- Header -->
-  <div class="player-header">
-    <button class="back-btn" onclick="goBack()">←</button>
-    <div class="player-title">Now Playing</div>
-  </div>
+<div class="back-btn" onclick="goBack()">⬅ Back</div>
+<video controls autoplay id="player"></video>
 
-  <!-- JWPlayer Player -->
-  <div id="player"></div>
+<script>
+  function goBack() {
+    history.back();
+  }
 
-  <script>
-    // Get video URL from query string
-    const params = new URLSearchParams(window.location.search);
-    const video = params.get("video");
-
-    if (!video) {
-      document.getElementById("player").innerHTML = "<p style='padding:20px;'>No video URL provided.</p>";
-    } else {
-      jwplayer("player").setup({
-        file: video,
-        controls: true,
-        autostart: true,
-        width: "100%",
-        aspectratio: "16:9",
-        skin: {
-          name: "seven"
-        }
-      });
-    }
-
-    function goBack() {
-      document.body.style.animation = "fadeOut 0.4s forwards";
-      setTimeout(() => {
-        window.location.href = "index.html"; // change to your homepage
-      }, 300);
-    }
-
-    // Optional fade out animation when navigating back
-    const style = document.createElement('style');
-    style.innerHTML = `
-      @keyframes fadeOut {
-        from { opacity: 1; transform: translateY(0); }
-        to { opacity: 0; transform: translateY(20px); }
-      }
-    `;
-    document.head.appendChild(style);
-  </script>
+  const params = new URLSearchParams(location.search);
+  const videoUrl = params.get("url");
+  if (videoUrl) {
+    document.getElementById("player").src = decodeURIComponent(videoUrl);
+  } else {
+    alert("❌ No video URL provided.");
+  }
+</script>
 
 </body>
 </html>
