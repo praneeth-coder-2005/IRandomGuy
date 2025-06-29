@@ -124,14 +124,20 @@
 
   <label>Video URL</label><input id="url" placeholder="https://your.video/file.mp4" />
 
-  <button class="add" onclick="addMovie()">Add / Update Movie</button>
+  <button class="add" onclick="addOrUpdateMovie()">Add / Update Movie</button>
 
   <h3>🗂️ Preview Added Movies:</h3>
   <div class="preview" id="previewList"></div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
   <script>
-    const TMDB_KEY = "bb5f40c5be4b24660cbdc20c2409835e"; // ← Replace with your key
-    let editIndex = -1;
+    const supabase = supabase.createClient(
+      'https://aoqszjgglkbceegjsreh.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFvcXN6amdnbGtiY2VlZ2pzcmVoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEyMTA4MTMsImV4cCI6MjA2Njc4NjgxM30.GaB-OT2UTwKOrU8bJCrXa771hSYFgdU3GQC6Ge39nCQ'
+    );
+
+    const TMDB_KEY = "bb5f40c5be4b24660cbdc20c2409835e";
+    let editingMovieId = null;
 
     function goHome() {
       window.location.href = "index.html";
@@ -145,7 +151,7 @@
     function clearForm() {
       document.getElementById('resultList').innerHTML = '<option value="">-- No results --</option>';
       ['poster','title','year','type','url'].forEach(id => document.getElementById(id).value = '');
-      editIndex = -1;
+      editingMovieId = null;
     }
 
     async function searchTMDB() {
@@ -173,62 +179,71 @@
       document.getElementById("type").value   = type.toUpperCase();
     };
 
-    function loadPreview() {
-      const list = JSON.parse(localStorage.getItem("movies") || "[]");
+    async function loadPreview() {
+      const { data, error } = await supabase.from("Movies").select("*").order("year", { descending: true });
       const out = document.getElementById("previewList");
       out.innerHTML = "";
-      list.forEach((movie,i) => {
+      if (error) {
+        alert("Failed to load movies");
+        console.error(error);
+        return;
+      }
+      data.forEach(movie => {
         out.innerHTML += `
           <div class="card">
             <img src="${movie.poster}" alt="" />
             <div class="card-title">${movie.title}</div>
-            <div class="action delete" onclick="deleteMovie(${i})">❌</div>
-            <div class="action edit"   onclick="editMovie(${i})">✏️</div>
+            <div class="action delete" onclick="deleteMovie('${movie.id}')">❌</div>
+            <div class="action edit"   onclick="editMovie('${movie.id}')">✏️</div>
           </div>`;
       });
     }
 
-    function addMovie() {
-      const m = {
+    async function addOrUpdateMovie() {
+      const movie = {
         poster: document.getElementById("poster").value,
         title:  document.getElementById("title").value,
         year:   document.getElementById("year").value,
         type:   document.getElementById("type").value,
         url:    document.getElementById("url").value.trim()
       };
-      if (!m.poster || !m.title || !m.url) return alert("Complete the form before adding.");
-      const arr = JSON.parse(localStorage.getItem("movies") || "[]");
-      if (editIndex >= 0) {
-        arr[editIndex] = m;
-        editIndex = -1;
+
+      if (!movie.poster || !movie.title || !movie.url) return alert("Complete the form before saving.");
+
+      if (editingMovieId) {
+        const { error } = await supabase.from("Movies").update(movie).eq("id", editingMovieId);
+        if (error) return alert("Failed to update movie");
+        alert("Movie updated!");
       } else {
-        arr.push(m);
+        const { error } = await supabase.from("Movies").insert([movie]);
+        if (error) return alert("Failed to add movie");
+        alert("Movie added!");
       }
-      localStorage.setItem("movies", JSON.stringify(arr));
-      alert("Movie saved!");
+
       clearForm();
       loadPreview();
     }
 
-    function deleteMovie(idx) {
+    async function deleteMovie(id) {
       if (!confirm("Delete this movie?")) return;
-      const arr = JSON.parse(localStorage.getItem("movies") || "[]");
-      arr.splice(idx,1);
-      localStorage.setItem("movies", JSON.stringify(arr));
+      const { error } = await supabase.from("Movies").delete().eq("id", id);
+      if (error) return alert("Failed to delete");
       loadPreview();
     }
 
-    function editMovie(idx) {
-      const arr = JSON.parse(localStorage.getItem("movies") || "[]");
-      const m = arr[idx];
-      ['poster','title','year','type','url'].forEach(id => {
-        document.getElementById(id).value = m[id];
-      });
-      editIndex = idx;
+    async function editMovie(id) {
+      const { data, error } = await supabase.from("Movies").select("*").eq("id", id).single();
+      if (error || !data) return alert("Failed to load movie for editing");
+
+      document.getElementById("poster").value = data.poster;
+      document.getElementById("title").value = data.title;
+      document.getElementById("year").value = data.year;
+      document.getElementById("type").value = data.type;
+      document.getElementById("url").value = data.url;
+      editingMovieId = id;
       alert("Editing movie — make changes and click Add / Update.");
     }
 
-    // Initialize preview on load
     loadPreview();
   </script>
 </body>
