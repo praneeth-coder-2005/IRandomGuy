@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin Panel with TMDB Search</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body { background: #121212; color: #fff; font-family: Arial, sans-serif; padding: 20px; }
+    h1 { text-align: center; color: #1e88e5; }
+    label { display: block; margin-top: 15px; font-weight: bold; }
+    input, select { width: 100%; padding: 10px; margin-top: 5px; background: #1e1e1e; border: none; color: #fff; border-radius: 5px; }
+    button { background: #1e88e5; color: white; padding: 10px; border: none; margin-top: 20px; width: 100%; border-radius: 5px; cursor: pointer; font-weight: bold; }
+    .preview-grid { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 30px; }
+    .card { background: #1c1c1c; padding: 10px; border-radius: 8px; width: 140px; text-align: center; }
+    .card img { width: 100%; border-radius: 6px; }
+    .card-title { margin: 5px 0; font-size: 14px; font-weight: 500; }
+    .card-year { font-size: 12px; color: #aaa; }
+  </style>
+</head>
+<body>
+  <h1>Troop Admin Panel</h1>
+  <label>Search Title (TMDB)</label>
+  <input type="text" id="searchText" placeholder="e.g., Inception" />
+  <button onclick="searchTMDB()">Search TMDB</button>
+
+  <label>Choose Result:</label>
+  <select id="tmdbResults"><option value="">-- No results --</option></select>
+
+  <label>Poster URL</label><input type="text" id="poster" readonly />
+  <label>Movie Title</label><input type="text" id="title" readonly />
+  <label>Year</label><input type="text" id="year" readonly />
+  <label>Tag (Movie / TV / Featured)</label><input type="text" id="tag" placeholder="e.g., MOVIE" />
+  <label>Video URL</label><input type="text" id="video" placeholder="Your video file link" />
+
+  <button onclick="addMovie()">Add Movie</button>
+
+  <h2>Preview</h2><div class="preview-grid" id="preview"></div>
+
+  <script>
+    const TMDB_KEY = 'TMDB_API_KEY'; // ← Replace with your TMDB API key
+    const preview = document.getElementById('preview');
+    const sel = document.getElementById('tmdbResults');
+
+    async function searchTMDB() {
+      const q = document.getElementById('searchText').value.trim();
+      if (!q) return alert('Enter search');
+      const res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${TMDB_KEY}&language=en-US&query=${encodeURIComponent(q)}`);
+      const json = await res.json();
+      sel.innerHTML = `<option value="">-- Select movie/show --</option>`;
+      json.results.forEach(r => {
+        sel.innerHTML += `<option value="${r.id}|${r.media_type}">${r.title||r.name} (${(r.release_date||r.first_air_date||'').slice(0,4)})</option>`;
+      });
+    }
+
+    sel.onchange = async () => {
+      const val = sel.value;
+      if (!val) return;
+      const [id, type] = val.split('|');
+      const res = await fetch(`https://api.themoviedb.org/3/${type}/${id}?api_key=${TMDB_KEY}&language=en-US`);
+      const j = await res.json();
+      document.getElementById('poster').value = `https://image.tmdb.org/t/p/w500${j.poster_path}`;
+      document.getElementById('title').value = j.title||j.name;
+      document.getElementById('year').value = (j.release_date||j.first_air_date||'').slice(0,4);
+      document.getElementById('tag').value = type.toUpperCase();
+    };
+
+    function loadMovies() {
+      preview.innerHTML = '';
+      const arr = JSON.parse(localStorage.getItem('troop_movies')||'[]');
+      arr.forEach(m => {
+        const c = document.createElement('div'); c.className = 'card';
+        c.innerHTML = `<a href="player.html?video=${encodeURIComponent(m.video)}">
+          <img src="${m.poster}"/><div class="card-title">${m.title}</div><div class="card-year">${m.year}</div>
+        </a>`;
+        preview.appendChild(c);
+      });
+    }
+
+    function addMovie() {
+      const p = poster.value, t = title.value, y = year.value, tag = tag.value.trim(), v = video.value.trim();
+      if (!p||!t||!y||!v) return alert('Fill all fields');
+      const arr = JSON.parse(localStorage.getItem('troop_movies')||'[]');
+      arr.push({poster:p,title:t,year:y,tag,video:v});
+      localStorage.setItem('troop_movies', JSON.stringify(arr));
+      loadMovies();
+      video.value = '';
+      alert('Saved!');
+    }
+
+    window.onload = loadMovies;
+  </script>
+</body>
+</html>
