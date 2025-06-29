@@ -5,85 +5,50 @@
   <title>Troop Player</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
-    body {
-      margin: 0;
-      background: #111;
-      font-family: sans-serif;
-      color: white;
-    }
+    body { margin: 0; background: #111; font-family: sans-serif; color: white; }
     .blur-bg {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background-size: cover;
-      background-position: center;
-      filter: blur(20px);
-      opacity: 0.3;
-      z-index: -1;
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background-size: cover; background-position: center;
+      filter: blur(20px); opacity: 0.3; z-index: -1;
     }
     .top-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: rgba(0, 0, 0, 0.6);
-      padding: 10px 15px;
-      position: sticky;
-      top: 0;
-      z-index: 1000;
+      display: flex; justify-content: space-between; align-items: center;
+      background: rgba(0, 0, 0, 0.6); padding: 10px 15px;
+      position: sticky; top: 0; z-index: 1000;
     }
     .top-bar button {
-      background: rgba(255,255,255,0.1);
-      color: white;
-      border: none;
-      padding: 6px 12px;
-      border-radius: 4px;
-      font-size: 14px;
-      cursor: pointer;
+      background: rgba(255,255,255,0.1); color: white;
+      border: none; padding: 6px 12px; border-radius: 4px;
+      font-size: 14px; cursor: pointer;
     }
-    .video-wrapper {
-      position: relative;
-      background: black;
-    }
-    video {
-      width: 100%;
-      height: auto;
-    }
+    .video-wrapper { position: relative; background: black; }
+    video { width: 100%; height: auto; }
     .controls {
-      position: relative;
-      background: rgba(0, 0, 0, 0.6);
-      display: flex;
-      flex-direction: column;
-      padding: 8px 12px;
+      position: relative; background: rgba(0, 0, 0, 0.6);
+      display: flex; flex-direction: column; padding: 8px 12px;
     }
     .control-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-top: 8px;
+      display: flex; justify-content: space-between; align-items: center; margin-top: 8px;
     }
     .control-left, .control-right {
-      display: flex;
-      align-items: center;
-      gap: 12px;
+      display: flex; align-items: center; gap: 12px;
     }
     .controls img {
-      width: 24px;
-      height: 24px;
-      filter: brightness(0) invert(1);
-      cursor: pointer;
+      width: 24px; height: 24px; filter: brightness(0) invert(1); cursor: pointer;
     }
     .progress-container {
-      height: 6px;
-      width: 100%;
-      background: #444;
-      border-radius: 3px;
-      cursor: pointer;
+      height: 6px; width: 100%; background: #444;
+      border-radius: 3px; cursor: pointer; position: relative;
     }
     .progress-bar {
-      height: 6px;
-      background: #1e88e5;
-      border-radius: 3px;
-      width: 0%;
+      height: 6px; background: #1e88e5;
+      border-radius: 3px; width: 0%;
+    }
+    .tooltip {
+      position: absolute; bottom: 100%; transform: translateX(-50%);
+      font-size: 11px; background: #000; color: #fff;
+      padding: 2px 6px; border-radius: 3px; white-space: nowrap;
+      display: none; pointer-events: none;
     }
     .info {
       padding: 15px;
@@ -92,14 +57,12 @@
     .info .meta { font-size: 13px; color: #ccc; }
     .info p { margin-top: 10px; line-height: 1.4; }
     .share-btn {
-      background: #1e88e5;
-      border: none;
-      color: white;
-      padding: 8px 14px;
-      border-radius: 5px;
-      font-size: 14px;
-      margin-top: 12px;
-      cursor: pointer;
+      background: #1e88e5; border: none; color: white;
+      padding: 8px 14px; border-radius: 5px;
+      font-size: 14px; margin-top: 12px; cursor: pointer;
+    }
+    .time-display {
+      margin-top: 8px; font-size: 14px;
     }
   </style>
 </head>
@@ -116,12 +79,12 @@
 <div class="video-wrapper">
   <video id="player" poster="" preload="metadata">
     <source id="videoSource" src="" type="video/mp4" />
-    Your browser does not support HTML5 video.
   </video>
 
   <div class="controls">
-    <div class="progress-container" onclick="seek(event)">
+    <div class="progress-container" onclick="seek(event)" onmousemove="showTooltip(event)" onmouseleave="hideTooltip()" id="progressContainer">
       <div class="progress-bar" id="progressBar"></div>
+      <div class="tooltip" id="tooltip"></div>
     </div>
     <div class="control-row">
       <div class="control-left">
@@ -133,6 +96,9 @@
         <img id="volumeBtn" src="https://cdn-icons-png.flaticon.com/512/565/565296.png" alt="Volume" onclick="toggleMute()">
         <img id="fullscreenBtn" src="https://cdn-icons-png.flaticon.com/512/3354/3354155.png" alt="Fullscreen" onclick="toggleFullscreen()">
       </div>
+    </div>
+    <div class="time-display">
+      <span id="currentTime">0:00</span> / <span id="totalTime">0:00</span>
     </div>
   </div>
 </div>
@@ -146,37 +112,40 @@
 </div>
 
 <script>
-  const params = new URLSearchParams(location.search);
-  const url = decodeURIComponent(params.get("url") || "");
-  const title = decodeURIComponent(params.get("title") || "Unknown Title");
-  const desc = decodeURIComponent(params.get("desc") || "No description.");
-  const cast = decodeURIComponent(params.get("cast") || "Unknown");
-  const year = decodeURIComponent(params.get("year") || "");
-  const type = decodeURIComponent(params.get("type") || "");
-  const poster = decodeURIComponent(params.get("poster") || "");
+  const $ = id => document.getElementById(id);
+  const player = $("player");
+  const videoSource = $("videoSource");
+  const progressBar = $("progressBar");
+  const tooltip = $("tooltip");
+  const currentTimeDisplay = $("currentTime");
+  const totalTimeDisplay = $("totalTime");
 
-  const player = document.getElementById("player");
-  const videoSource = document.getElementById("videoSource");
-  const progressBar = document.getElementById("progressBar");
+  const p = new URLSearchParams(location.search);
+  const url = decodeURIComponent(p.get("url") || "");
+  const title = decodeURIComponent(p.get("title") || "Unknown Title");
+  const desc = decodeURIComponent(p.get("desc") || "No description.");
+  const cast = decodeURIComponent(p.get("cast") || "Unknown");
+  const year = decodeURIComponent(p.get("year") || "");
+  const type = decodeURIComponent(p.get("type") || "");
+  const poster = decodeURIComponent(p.get("poster") || "");
 
-  if (url) {
-    videoSource.src = url;
-    player.load();
-  } else {
-    alert("❌ No video URL provided.");
-  }
+  if (url) videoSource.src = url;
+  else alert("❌ No video URL provided.");
 
-  document.getElementById("titleText").innerText = title;
-  document.getElementById("movieTitle").innerText = title;
-  document.getElementById("metaText").innerText = `${year} · ${type}`;
-  document.getElementById("descText").innerText = desc;
-  document.getElementById("castText").innerText = cast;
-  document.getElementById("bgPoster").style.backgroundImage = `url('${poster}')`;
+  $("titleText").innerText = title;
+  $("movieTitle").innerText = title;
+  $("metaText").innerText = `${year} · ${type}`;
+  $("descText").innerText = desc;
+  $("castText").innerText = cast;
+  $("bgPoster").style.backgroundImage = `url('${poster}')`;
   player.poster = poster;
 
-  const playBtn = document.getElementById("playBtn");
-  const volumeBtn = document.getElementById("volumeBtn");
-  const fullscreenBtn = document.getElementById("fullscreenBtn");
+  const playBtn = $("playBtn");
+  const volumeBtn = $("volumeBtn");
+  const fullscreenBtn = $("fullscreenBtn");
+
+  const storageKey = "player_" + btoa(url);
+  player.currentTime = parseFloat(localStorage.getItem(storageKey)) || 0;
 
   function togglePlay() {
     if (player.paused) {
@@ -205,8 +174,8 @@
     }
   }
 
-  function skip(seconds) {
-    player.currentTime += seconds;
+  function skip(s) {
+    player.currentTime += s;
   }
 
   function seek(e) {
@@ -215,15 +184,38 @@
     player.currentTime = percent * player.duration;
   }
 
+  function showTooltip(e) {
+    const rect = $("progressContainer").getBoundingClientRect();
+    const percent = (e.clientX - rect.left) / rect.width;
+    const time = percent * player.duration;
+    tooltip.innerText = formatTime(time);
+    tooltip.style.left = `${e.clientX - rect.left}px`;
+    tooltip.style.display = "block";
+  }
+
+  function hideTooltip() {
+    tooltip.style.display = "none";
+  }
+
+  function formatTime(t) {
+    const m = Math.floor(t / 60);
+    const s = Math.floor(t % 60).toString().padStart(2, "0");
+    return `${m}:${s}`;
+  }
+
   function copyLink() {
-    navigator.clipboard.writeText(location.href).then(() => {
-      alert("🔗 Link copied!");
-    });
+    navigator.clipboard.writeText(location.href).then(() => alert("🔗 Link copied!"));
   }
 
   player.addEventListener("timeupdate", () => {
     const percent = (player.currentTime / player.duration) * 100;
     progressBar.style.width = percent + "%";
+    currentTimeDisplay.innerText = formatTime(player.currentTime);
+    localStorage.setItem(storageKey, player.currentTime);
+  });
+
+  player.addEventListener("loadedmetadata", () => {
+    totalTimeDisplay.innerText = formatTime(player.duration);
   });
 
   player.addEventListener("ended", () => {
