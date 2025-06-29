@@ -21,8 +21,39 @@
       border: none; padding: 6px 12px; border-radius: 4px;
       font-size: 14px; cursor: pointer;
     }
-    .video-wrapper { position: relative; background: black; }
-    video { width: 100%; height: auto; }
+    .video-wrapper {
+      position: relative;
+      background: black;
+    }
+    video {
+      width: 100%;
+      height: auto;
+    }
+
+    .center-controls {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      display: flex;
+      gap: 25px;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      z-index: 10;
+    }
+
+    .video-wrapper:hover .center-controls {
+      opacity: 1;
+    }
+
+    .center-controls img {
+      width: 36px;
+      height: 36px;
+      filter: brightness(0) invert(1);
+      cursor: pointer;
+    }
 
     .controls {
       background: rgba(0, 0, 0, 0.6);
@@ -104,6 +135,13 @@
     <source id="videoSource" src="" type="video/mp4" />
   </video>
 
+  <!-- Centered overlay controls -->
+  <div class="center-controls">
+    <img src="https://cdn-icons-png.flaticon.com/512/5296/5296749.png" onclick="skip(-10)" alt="Back 10s">
+    <img id="centerPlayBtn" src="https://cdn-icons-png.flaticon.com/512/2088/2088569.png" onclick="togglePlay()" alt="Play/Pause">
+    <img src="https://cdn-icons-png.flaticon.com/512/5293/5293447.png" onclick="skip(10)" alt="Forward 10s">
+  </div>
+
   <div class="controls">
     <div class="progress-container" id="progressContainer">
       <div class="progress-bar" id="progressBar"></div>
@@ -155,9 +193,16 @@ $("castText").innerText = cast;
 $("bgPoster").style.backgroundImage = `url('${poster}')`;
 player.poster = poster;
 
-const playBtn = $("playBtn"), volumeBtn = $("volumeBtn"), fullscreenBtn = $("fullscreenBtn");
-const progressBar = $("progressBar"), tooltip = $("tooltip"), knob = $("progressKnob"), container = $("progressContainer");
-const currentTimeDisplay = $("currentTime"), totalTimeDisplay = $("totalTime");
+const playBtn = $("playBtn");
+const centerPlayBtn = $("centerPlayBtn");
+const volumeBtn = $("volumeBtn");
+const fullscreenBtn = $("fullscreenBtn");
+const progressBar = $("progressBar");
+const tooltip = $("tooltip");
+const knob = $("progressKnob");
+const container = $("progressContainer");
+const currentTimeDisplay = $("currentTime");
+const totalTimeDisplay = $("totalTime");
 
 const storageKey = "player_" + btoa(url);
 player.currentTime = parseFloat(localStorage.getItem(storageKey)) || 0;
@@ -171,10 +216,10 @@ function formatTime(t) {
 function togglePlay() {
   if (player.paused) {
     player.play();
-    playBtn.src = "https://cdn-icons-png.flaticon.com/512/1214/1214679.png";
+    playBtn.src = centerPlayBtn.src = "https://cdn-icons-png.flaticon.com/512/1214/1214679.png";
   } else {
     player.pause();
-    playBtn.src = "https://cdn-icons-png.flaticon.com/512/2088/2088569.png";
+    playBtn.src = centerPlayBtn.src = "https://cdn-icons-png.flaticon.com/512/2088/2088569.png";
   }
 }
 
@@ -212,7 +257,7 @@ player.addEventListener("loadedmetadata", () => {
   totalTimeDisplay.innerText = formatTime(player.duration);
 });
 player.addEventListener("ended", () => {
-  playBtn.src = "https://cdn-icons-png.flaticon.com/512/2088/2088569.png";
+  playBtn.src = centerPlayBtn.src = "https://cdn-icons-png.flaticon.com/512/2088/2088569.png";
 });
 
 container.addEventListener("click", e => {
