@@ -60,16 +60,20 @@
         return;
       }
 
+      console.log("Trying login with:", user);
+
       const { data, error } = await supabase.auth.signInWithPassword({
         email: user,
         password: pass
       });
 
       if (error) {
+        console.error("Login error:", error);
         msgEl.innerText = "Login failed: " + error.message;
         return;
       }
 
+      console.log("Login success", data);
       localStorage.setItem("admin_login", "true");
       location.href = "admin.html";
     }
