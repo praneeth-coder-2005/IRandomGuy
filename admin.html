@@ -185,16 +185,25 @@
       if (!val) return;
 
       const [id, type] = val.split("|");
+
       try {
         const res = await fetch(`https://api.themoviedb.org/3/${type}/${id}?api_key=${TMDB_KEY}`);
         const data = await res.json();
 
-        document.getElementById("poster").value = `https://image.tmdb.org/t/p/w500${data.poster_path}`;
-        document.getElementById("title").value = data.title || data.name;
-        document.getElementById("year").value = (data.release_date || data.first_air_date || "").slice(0, 4);
-        document.getElementById("type").value = type.toUpperCase();
+        console.log("🎯 TMDb selected item details:", data);
+
+        const poster = data.poster_path ? `https://image.tmdb.org/t/p/w500${data.poster_path}` : "";
+        const title = data.title || data.name || "";
+        const year = (data.release_date || data.first_air_date || "").slice(0, 4);
+        const mediaType = type.toUpperCase();
+
+        document.getElementById("poster").value = poster;
+        document.getElementById("title").value = title;
+        document.getElementById("year").value = year;
+        document.getElementById("type").value = mediaType;
       } catch (err) {
-        console.error("❌ TMDb details fetch error:", err);
+        console.error("❌ Failed to load TMDb details:", err);
+        alert("Error loading movie details from TMDb.");
       }
     };
 
