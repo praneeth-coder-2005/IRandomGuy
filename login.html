@@ -52,10 +52,11 @@
     async function login() {
       const user = username.value.trim();
       const pass = password.value.trim();
-      msg.innerText = '';
+      const msgEl = document.getElementById('msg');
+      msgEl.innerText = '';
 
       if (!user || !pass) {
-        msg.innerText = "Please enter both fields.";
+        msgEl.innerText = "Please enter both fields.";
         return;
       }
 
@@ -63,14 +64,19 @@
         .from('admins')
         .select('*')
         .eq('username', user)
-        .eq('password', pass)
-        .single();
+        .eq('password', pass);
 
-      if (error || !data) {
-        msg.innerText = "Invalid credentials";
-      } else {
+      if (error) {
+        msgEl.innerText = "Supabase error: " + error.message;
+        console.error("Supabase error:", error);
+        return;
+      }
+
+      if (data && data.length === 1) {
         localStorage.setItem("admin_login", "true");
         location.href = "admin.html";
+      } else {
+        msgEl.innerText = "Invalid username or password.";
       }
     }
   </script>
