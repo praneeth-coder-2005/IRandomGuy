@@ -180,10 +180,11 @@
       <div class="bar-right">
         <img id="settingsBtn" src="https://cdn-icons-png.flaticon.com/512/484/484613.png" onclick="toggleSettingsMenu()" alt="Settings">
         <div class="settings-dropdown" id="settingsDropdown">
-          <a href="#" onclick="changeSpeed(0.5)">0.5x</a>
-          <a href="#" onclick="changeSpeed(1)">1x</a>
-          <a href="#" onclick="changeSpeed(1.5)">1.5x</a>
-          <a href="#" onclick="changeSpeed(2)">2x</a>
+          <a href="#" onclick="changeSpeed(0.5)">Speed: 0.5x</a>
+          <a href="#" onclick="changeSpeed(1)">Speed: 1x</a>
+          <a href="#" onclick="changeSpeed(1.5)">Speed: 1.5x</a>
+          <a href="#" onclick="changeSpeed(2)">Speed: 2x</a>
+          <a href="#" onclick="toggleSubtitles()">Subtitles: Toggle</a>
         </div>
         <img id="fullscreenBtn" src="https://cdn-icons-png.flaticon.com/512/3354/3354155.png" onclick="toggleFullscreen()" alt="Fullscreen">
       </div>
@@ -202,27 +203,16 @@
 <script>
 const $ = id => document.getElementById(id);
 const player = $("player");
-const wrapper = $("videoWrapper");
+const subtitleTrack = $("subTrack");
+
 const p = new URLSearchParams(location.search);
-const url = decodeURIComponent(p.get("url") || "");
-const title = decodeURIComponent(p.get("title") || "Unknown Title");
-const desc = decodeURIComponent(p.get("desc") || "No description.");
-const cast = decodeURIComponent(p.get("cast") || "Unknown");
-const year = decodeURIComponent(p.get("year") || "");
-const type = decodeURIComponent(p.get("type") || "");
-const poster = decodeURIComponent(p.get("poster") || "");
-const subtitle = decodeURIComponent(p.get("sub") || "");
-
-$("videoSource").src = url;
-if (subtitle) $("subTrack").src = subtitle;
-
-$("titleText").innerText = title;
-$("movieTitle").innerText = title;
-$("metaText").innerText = `${year} · ${type}`;
-$("descText").innerText = desc;
-$("castText").innerText = cast;
-$("bgPoster").style.backgroundImage = `url('${poster}')`;
-player.poster = poster;
+$("videoSource").src = decodeURIComponent(p.get("url") || "");
+$("subTrack").src = decodeURIComponent(p.get("sub") || "");
+$("movieTitle").textContent = $("titleText").textContent = decodeURIComponent(p.get("title") || "Unknown Title");
+$("metaText").textContent = `${decodeURIComponent(p.get("year") || "")} · ${decodeURIComponent(p.get("type") || "")}`;
+$("descText").textContent = decodeURIComponent(p.get("desc") || "");
+$("castText").textContent = decodeURIComponent(p.get("cast") || "Unknown");
+$("bgPoster").style.backgroundImage = `url('${decodeURIComponent(p.get("poster") || "")}')`;
 
 const playBtn = $("playBtn"), centerPlayBtn = $("centerPlayBtn"),
       volumeBtn = $("volumeBtn"), fullscreenBtn = $("fullscreenBtn"),
@@ -230,13 +220,20 @@ const playBtn = $("playBtn"), centerPlayBtn = $("centerPlayBtn"),
       knob = $("progressKnob"), container = $("progressContainer"),
       currentTimeDisplay = $("currentTime"), totalTimeDisplay = $("totalTime");
 
-const storageKey = "player_" + btoa(url);
-player.currentTime = parseFloat(localStorage.getItem(storageKey)) || 0;
+let subtitleEnabled = true;
+function toggleSubtitles() {
+  subtitleEnabled = !subtitleEnabled;
+  subtitleTrack.mode = subtitleEnabled ? "showing" : "disabled";
+}
 
-function formatTime(t) {
-  const m = Math.floor(t / 60);
-  const s = Math.floor(t % 60).toString().padStart(2, "0");
-  return `${m}:${s}`;
+function toggleSettingsMenu() {
+  const menu = $("settingsDropdown");
+  menu.style.display = menu.style.display === "block" ? "none" : "block";
+}
+
+function changeSpeed(rate) {
+  player.playbackRate = parseFloat(rate);
+  toggleSettingsMenu();
 }
 
 function togglePlay() {
@@ -266,34 +263,25 @@ function toggleFullscreen() {
   }
 }
 
-function changeSpeed(rate) {
-  player.playbackRate = parseFloat(rate);
-  toggleSettingsMenu(); // hide after select
-}
-
-function toggleSettingsMenu() {
-  const menu = $("settingsDropdown");
-  menu.style.display = menu.style.display === "block" ? "none" : "block";
-}
-
 function skip(sec) {
   player.currentTime += sec;
 }
 
-function updateUI() {
+function formatTime(t) {
+  const m = Math.floor(t / 60);
+  const s = Math.floor(t % 60).toString().padStart(2, "0");
+  return `${m}:${s}`;
+}
+
+player.addEventListener("timeupdate", () => {
   const percent = (player.currentTime / player.duration) * 100;
   progressBar.style.width = percent + "%";
   knob.style.left = percent + "%";
   currentTimeDisplay.innerText = formatTime(player.currentTime);
-  localStorage.setItem(storageKey, player.currentTime);
-}
+});
 
-player.addEventListener("timeupdate", updateUI);
 player.addEventListener("loadedmetadata", () => {
   totalTimeDisplay.innerText = formatTime(player.duration);
-});
-player.addEventListener("ended", () => {
-  playBtn.src = centerPlayBtn.src = "https://cdn-icons-png.flaticon.com/512/2088/2088569.png";
 });
 
 container.addEventListener("click", e => {
@@ -325,9 +313,10 @@ function copyLink() {
   navigator.clipboard.writeText(location.href).then(() => alert("🔗 Link copied!"));
 }
 
-// Auto-hide logic
+// Auto-hide
 let controlTimeout;
 function showControls() {
+  const wrapper = $("videoWrapper");
   wrapper.classList.add("show-controls");
   wrapper.classList.remove("hide-ui");
   clearTimeout(controlTimeout);
@@ -337,4 +326,4 @@ showControls();
 </script>
 
 </body>
-  </html>
+</html>
