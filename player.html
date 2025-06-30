@@ -51,7 +51,7 @@
       background: rgba(0, 0, 0, 0.6);
       padding: 10px 12px;
       display: flex; flex-direction: column;
-      gap: 10px; opacity: 1;
+      gap: 10px;
       transition: opacity 0.3s ease;
     }
 
@@ -103,9 +103,26 @@
       font-size: 12px;
     }
 
-    .speed-select {
-      background: #222; color: white; border: 1px solid #333;
-      padding: 2px 5px; border-radius: 3px;
+    .settings-dropdown {
+      position: absolute;
+      bottom: 45px; right: 45px;
+      background-color: #222;
+      border-radius: 5px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.4);
+      display: none;
+      z-index: 1000;
+    }
+
+    .settings-dropdown a {
+      display: block;
+      padding: 8px 14px;
+      color: white;
+      text-decoration: none;
+      font-size: 14px;
+    }
+
+    .settings-dropdown a:hover {
+      background: #444;
     }
 
     .info {
@@ -137,14 +154,14 @@
     <track id="subTrack" label="English" kind="subtitles" srclang="en" default>
   </video>
 
-  <!-- Center Overlay Controls -->
+  <!-- Center controls -->
   <div class="center-controls">
     <img src="https://cdn-icons-png.flaticon.com/512/5296/5296749.png" onclick="skip(-10)" alt="Back 10s">
     <img id="centerPlayBtn" src="https://cdn-icons-png.flaticon.com/512/2088/2088569.png" onclick="togglePlay()" alt="Play/Pause">
     <img src="https://cdn-icons-png.flaticon.com/512/5293/5293447.png" onclick="skip(10)" alt="Forward 10s">
   </div>
 
-  <!-- Bottom Controls -->
+  <!-- Bottom controls -->
   <div class="controls" id="controls">
     <div class="progress-container" id="progressContainer">
       <div class="progress-bar" id="progressBar"></div>
@@ -161,13 +178,13 @@
         <span class="time-display"><span id="currentTime">0:00</span> / <span id="totalTime">0:00</span></span>
       </div>
       <div class="bar-right">
-        <select class="speed-select" onchange="changeSpeed(this.value)">
-          <option value="0.5">0.5x</option>
-          <option value="1" selected>1x</option>
-          <option value="1.5">1.5x</option>
-          <option value="2">2x</option>
-        </select>
-        <img id="pipBtn" src="https://cdn-icons-png.flaticon.com/512/189/189665.png" onclick="togglePiP()" alt="PiP">
+        <img id="settingsBtn" src="https://cdn-icons-png.flaticon.com/512/484/484613.png" onclick="toggleSettingsMenu()" alt="Settings">
+        <div class="settings-dropdown" id="settingsDropdown">
+          <a href="#" onclick="changeSpeed(0.5)">0.5x</a>
+          <a href="#" onclick="changeSpeed(1)">1x</a>
+          <a href="#" onclick="changeSpeed(1.5)">1.5x</a>
+          <a href="#" onclick="changeSpeed(2)">2x</a>
+        </div>
         <img id="fullscreenBtn" src="https://cdn-icons-png.flaticon.com/512/3354/3354155.png" onclick="toggleFullscreen()" alt="Fullscreen">
       </div>
     </div>
@@ -209,7 +226,6 @@ player.poster = poster;
 
 const playBtn = $("playBtn"), centerPlayBtn = $("centerPlayBtn"),
       volumeBtn = $("volumeBtn"), fullscreenBtn = $("fullscreenBtn"),
-      pipBtn = $("pipBtn"),
       progressBar = $("progressBar"), tooltip = $("tooltip"),
       knob = $("progressKnob"), container = $("progressContainer"),
       currentTimeDisplay = $("currentTime"), totalTimeDisplay = $("totalTime");
@@ -250,12 +266,14 @@ function toggleFullscreen() {
   }
 }
 
-function togglePiP() {
-  if (document.pictureInPictureElement) {
-    document.exitPictureInPicture();
-  } else if (player.requestPictureInPicture) {
-    player.requestPictureInPicture().catch(() => alert("❌ PiP not supported"));
-  }
+function changeSpeed(rate) {
+  player.playbackRate = parseFloat(rate);
+  toggleSettingsMenu(); // hide after select
+}
+
+function toggleSettingsMenu() {
+  const menu = $("settingsDropdown");
+  menu.style.display = menu.style.display === "block" ? "none" : "block";
 }
 
 function skip(sec) {
@@ -303,15 +321,11 @@ document.addEventListener("mousemove", e => {
   player.currentTime = percent * player.duration;
 });
 
-function changeSpeed(rate) {
-  player.playbackRate = parseFloat(rate);
-}
-
 function copyLink() {
   navigator.clipboard.writeText(location.href).then(() => alert("🔗 Link copied!"));
 }
 
-// Auto-hide controls
+// Auto-hide logic
 let controlTimeout;
 function showControls() {
   wrapper.classList.add("show-controls");
@@ -323,4 +337,4 @@ showControls();
 </script>
 
 </body>
-</html>
+  </html>
