@@ -36,10 +36,7 @@
       opacity: 0; transition: opacity 0.3s ease;
       z-index: 10;
     }
-
-    .video-wrapper.show-controls .center-controls {
-      opacity: 1;
-    }
+    .video-wrapper.show-controls .center-controls { opacity: 1; }
 
     .center-controls img {
       width: 36px; height: 36px;
@@ -52,11 +49,6 @@
       padding: 10px 12px;
       display: flex; flex-direction: column;
       gap: 10px;
-      transition: opacity 0.3s ease;
-    }
-
-    .video-wrapper.hide-ui .controls {
-      opacity: 0;
     }
 
     .progress-container {
@@ -64,15 +56,13 @@
       height: 6px; width: 100%;
       background: #444; border-radius: 3px; cursor: pointer;
     }
-
     .progress-bar {
       height: 6px; background: #1e88e5;
       border-radius: 3px; width: 0%;
     }
-
     .progress-knob {
-      position: absolute;
-      top: -5px; width: 12px; height: 12px;
+      position: absolute; top: -5px;
+      width: 12px; height: 12px;
       background: #fff; border-radius: 50%;
       transform: translateX(-50%);
       pointer-events: auto; cursor: grab;
@@ -81,8 +71,8 @@
     .tooltip {
       position: absolute; bottom: 100%; transform: translateX(-50%);
       font-size: 11px; background: #000; color: #fff;
-      padding: 2px 6px; border-radius: 3px; white-space: nowrap;
-      display: none;
+      padding: 2px 6px; border-radius: 3px;
+      white-space: nowrap; display: none;
     }
 
     .bar-row {
@@ -92,38 +82,27 @@
     .bar-left, .bar-right {
       display: flex; align-items: center; gap: 8px;
     }
-
     .bar-left img, .bar-right img {
       width: 16px; height: 16px;
       filter: brightness(0) invert(1);
       cursor: pointer;
     }
 
-    .time-display {
-      font-size: 12px;
-    }
+    .time-display { font-size: 12px; }
 
     .settings-dropdown {
       position: absolute;
       bottom: 45px; right: 45px;
-      background-color: #222;
-      border-radius: 5px;
+      background-color: #222; border-radius: 5px;
       box-shadow: 0 0 10px rgba(0,0,0,0.4);
-      display: none;
-      z-index: 1000;
+      display: none; z-index: 1000;
     }
-
     .settings-dropdown a {
-      display: block;
-      padding: 8px 14px;
-      color: white;
-      text-decoration: none;
+      display: block; padding: 8px 14px;
+      color: white; text-decoration: none;
       font-size: 14px;
     }
-
-    .settings-dropdown a:hover {
-      background: #444;
-    }
+    .settings-dropdown a:hover { background: #444; }
 
     .info {
       padding: 15px;
@@ -154,14 +133,12 @@
     <track id="subTrack" label="English" kind="subtitles" srclang="en" default>
   </video>
 
-  <!-- Center controls -->
   <div class="center-controls">
     <img src="https://cdn-icons-png.flaticon.com/512/5296/5296749.png" onclick="skip(-10)" alt="Back 10s">
     <img id="centerPlayBtn" src="https://cdn-icons-png.flaticon.com/512/2088/2088569.png" onclick="togglePlay()" alt="Play/Pause">
     <img src="https://cdn-icons-png.flaticon.com/512/5293/5293447.png" onclick="skip(10)" alt="Forward 10s">
   </div>
 
-  <!-- Bottom controls -->
   <div class="controls" id="controls">
     <div class="progress-container" id="progressContainer">
       <div class="progress-bar" id="progressBar"></div>
@@ -202,118 +179,102 @@
 
 <script>
 const $ = id => document.getElementById(id);
-const player = $("player");
-const subtitleTrack = $("subTrack");
-
 const p = new URLSearchParams(location.search);
 $("videoSource").src = decodeURIComponent(p.get("url") || "");
 $("subTrack").src = decodeURIComponent(p.get("sub") || "");
-$("movieTitle").textContent = $("titleText").textContent = decodeURIComponent(p.get("title") || "Unknown Title");
+$("titleText").textContent = $("movieTitle").textContent = decodeURIComponent(p.get("title") || "Now Playing");
 $("metaText").textContent = `${decodeURIComponent(p.get("year") || "")} · ${decodeURIComponent(p.get("type") || "")}`;
 $("descText").textContent = decodeURIComponent(p.get("desc") || "");
 $("castText").textContent = decodeURIComponent(p.get("cast") || "Unknown");
 $("bgPoster").style.backgroundImage = `url('${decodeURIComponent(p.get("poster") || "")}')`;
 
-const playBtn = $("playBtn"), centerPlayBtn = $("centerPlayBtn"),
-      volumeBtn = $("volumeBtn"), fullscreenBtn = $("fullscreenBtn"),
-      progressBar = $("progressBar"), tooltip = $("tooltip"),
-      knob = $("progressKnob"), container = $("progressContainer"),
-      currentTimeDisplay = $("currentTime"), totalTimeDisplay = $("totalTime");
-
+const player = $("player");
+const subtitleTrack = $("subTrack");
 let subtitleEnabled = true;
+
 function toggleSubtitles() {
   subtitleEnabled = !subtitleEnabled;
   subtitleTrack.mode = subtitleEnabled ? "showing" : "disabled";
 }
 
-function toggleSettingsMenu() {
-  const menu = $("settingsDropdown");
-  menu.style.display = menu.style.display === "block" ? "none" : "block";
+function togglePlay() {
+  if (player.paused) {
+    player.play();
+    $("playBtn").src = $("centerPlayBtn").src = "https://cdn-icons-png.flaticon.com/512/1214/1214679.png";
+  } else {
+    player.pause();
+    $("playBtn").src = $("centerPlayBtn").src = "https://cdn-icons-png.flaticon.com/512/2088/2088569.png";
+  }
 }
-
+function skip(sec) { player.currentTime += sec; }
+function toggleMute() {
+  player.muted = !player.muted;
+  $("volumeBtn").src = player.muted
+    ? "https://cdn-icons-png.flaticon.com/512/4546/4546899.png"
+    : "https://cdn-icons-png.flaticon.com/512/565/565296.png";
+}
+function toggleFullscreen() {
+  if (!document.fullscreenElement) {
+    player.requestFullscreen();
+    $("fullscreenBtn").src = "https://cdn-icons-png.flaticon.com/512/3502/3502504.png";
+  } else {
+    document.exitFullscreen();
+    $("fullscreenBtn").src = "https://cdn-icons-png.flaticon.com/512/3354/3354155.png";
+  }
+}
 function changeSpeed(rate) {
   player.playbackRate = parseFloat(rate);
   toggleSettingsMenu();
 }
-
-function togglePlay() {
-  if (player.paused) {
-    player.play();
-    playBtn.src = centerPlayBtn.src = "https://cdn-icons-png.flaticon.com/512/1214/1214679.png";
-  } else {
-    player.pause();
-    playBtn.src = centerPlayBtn.src = "https://cdn-icons-png.flaticon.com/512/2088/2088569.png";
-  }
+function toggleSettingsMenu() {
+  const menu = $("settingsDropdown");
+  menu.style.display = menu.style.display === "block" ? "none" : "block";
 }
-
-function toggleMute() {
-  player.muted = !player.muted;
-  volumeBtn.src = player.muted
-    ? "https://cdn-icons-png.flaticon.com/512/4546/4546899.png"
-    : "https://cdn-icons-png.flaticon.com/512/565/565296.png";
-}
-
-function toggleFullscreen() {
-  if (!document.fullscreenElement) {
-    player.requestFullscreen();
-    fullscreenBtn.src = "https://cdn-icons-png.flaticon.com/512/3502/3502504.png";
-  } else {
-    document.exitFullscreen();
-    fullscreenBtn.src = "https://cdn-icons-png.flaticon.com/512/3354/3354155.png";
-  }
-}
-
-function skip(sec) {
-  player.currentTime += sec;
-}
-
 function formatTime(t) {
   const m = Math.floor(t / 60);
   const s = Math.floor(t % 60).toString().padStart(2, "0");
   return `${m}:${s}`;
 }
-
-player.addEventListener("timeupdate", () => {
+function updateUI() {
   const percent = (player.currentTime / player.duration) * 100;
-  progressBar.style.width = percent + "%";
-  knob.style.left = percent + "%";
-  currentTimeDisplay.innerText = formatTime(player.currentTime);
-});
-
+  $("progressBar").style.width = percent + "%";
+  $("progressKnob").style.left = percent + "%";
+  $("currentTime").innerText = formatTime(player.currentTime);
+  localStorage.setItem("player_" + btoa(p.get("url") || ""), player.currentTime);
+}
+player.addEventListener("timeupdate", updateUI);
 player.addEventListener("loadedmetadata", () => {
-  totalTimeDisplay.innerText = formatTime(player.duration);
+  $("totalTime").innerText = formatTime(player.duration);
+  const saved = parseFloat(localStorage.getItem("player_" + btoa(p.get("url") || "")));
+  if (saved) player.currentTime = saved;
 });
-
-container.addEventListener("click", e => {
-  const rect = container.getBoundingClientRect();
+$("progressContainer").addEventListener("click", e => {
+  const rect = e.target.getBoundingClientRect();
   const percent = (e.clientX - rect.left) / rect.width;
   player.currentTime = percent * player.duration;
 });
-
-container.addEventListener("mousemove", e => {
-  const rect = container.getBoundingClientRect();
+$("progressContainer").addEventListener("mousemove", e => {
+  const rect = e.target.getBoundingClientRect();
   const percent = (e.clientX - rect.left) / rect.width;
-  tooltip.innerText = formatTime(percent * player.duration);
-  tooltip.style.left = `${e.clientX - rect.left}px`;
-  tooltip.style.display = "block";
+  $("tooltip").innerText = formatTime(percent * player.duration);
+  $("tooltip").style.left = `${e.clientX - rect.left}px`;
+  $("tooltip").style.display = "block";
 });
-container.addEventListener("mouseleave", () => tooltip.style.display = "none");
-
+$("progressContainer").addEventListener("mouseleave", () => {
+  $("tooltip").style.display = "none";
+});
 let dragging = false;
-knob.addEventListener("mousedown", () => dragging = true);
+$("progressKnob").addEventListener("mousedown", () => dragging = true);
 document.addEventListener("mouseup", () => dragging = false);
 document.addEventListener("mousemove", e => {
   if (!dragging) return;
-  const rect = container.getBoundingClientRect();
+  const rect = $("progressContainer").getBoundingClientRect();
   const percent = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
   player.currentTime = percent * player.duration;
 });
-
 function copyLink() {
   navigator.clipboard.writeText(location.href).then(() => alert("🔗 Link copied!"));
 }
-
-// Auto-hide
 let controlTimeout;
 function showControls() {
   const wrapper = $("videoWrapper");
@@ -324,6 +285,5 @@ function showControls() {
 }
 showControls();
 </script>
-
 </body>
 </html>
