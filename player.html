@@ -25,32 +25,24 @@
       position: relative;
       background: black;
     }
-    video {
-      width: 100%;
-      height: auto;
-    }
+    video { width: 100%; height: auto; }
 
     .center-controls {
       position: absolute;
-      top: 50%;
-      left: 50%;
+      top: 50%; left: 50%;
       transform: translate(-50%, -50%);
-      display: flex;
-      gap: 25px;
-      align-items: center;
-      justify-content: center;
-      opacity: 0;
-      transition: opacity 0.3s ease;
+      display: flex; gap: 25px;
+      align-items: center; justify-content: center;
+      opacity: 0; transition: opacity 0.3s ease;
       z-index: 10;
     }
 
-    .video-wrapper:hover .center-controls {
+    .video-wrapper.show-controls .center-controls {
       opacity: 1;
     }
 
     .center-controls img {
-      width: 36px;
-      height: 36px;
+      width: 36px; height: 36px;
       filter: brightness(0) invert(1);
       cursor: pointer;
     }
@@ -58,9 +50,13 @@
     .controls {
       background: rgba(0, 0, 0, 0.6);
       padding: 10px 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
+      display: flex; flex-direction: column;
+      gap: 10px; opacity: 1;
+      transition: opacity 0.3s ease;
+    }
+
+    .video-wrapper.hide-ui .controls {
+      opacity: 0;
     }
 
     .progress-container {
@@ -107,6 +103,11 @@
       font-size: 12px;
     }
 
+    .speed-select {
+      background: #222; color: white; border: 1px solid #333;
+      padding: 2px 5px; border-radius: 3px;
+    }
+
     .info {
       padding: 15px;
     }
@@ -130,19 +131,21 @@
   <button onclick="location.href='index.html'">🏠 Home</button>
 </div>
 
-<div class="video-wrapper">
-  <video id="player" poster="" preload="metadata">
+<div class="video-wrapper" id="videoWrapper" onclick="showControls()">
+  <video id="player" controlsList="nodownload">
     <source id="videoSource" src="" type="video/mp4" />
+    <track id="subTrack" label="English" kind="subtitles" srclang="en" default>
   </video>
 
-  <!-- Centered overlay controls -->
+  <!-- Center Overlay Controls -->
   <div class="center-controls">
     <img src="https://cdn-icons-png.flaticon.com/512/5296/5296749.png" onclick="skip(-10)" alt="Back 10s">
     <img id="centerPlayBtn" src="https://cdn-icons-png.flaticon.com/512/2088/2088569.png" onclick="togglePlay()" alt="Play/Pause">
     <img src="https://cdn-icons-png.flaticon.com/512/5293/5293447.png" onclick="skip(10)" alt="Forward 10s">
   </div>
 
-  <div class="controls">
+  <!-- Bottom Controls -->
+  <div class="controls" id="controls">
     <div class="progress-container" id="progressContainer">
       <div class="progress-bar" id="progressBar"></div>
       <div class="progress-knob" id="progressKnob"></div>
@@ -158,6 +161,13 @@
         <span class="time-display"><span id="currentTime">0:00</span> / <span id="totalTime">0:00</span></span>
       </div>
       <div class="bar-right">
+        <select class="speed-select" onchange="changeSpeed(this.value)">
+          <option value="0.5">0.5x</option>
+          <option value="1" selected>1x</option>
+          <option value="1.5">1.5x</option>
+          <option value="2">2x</option>
+        </select>
+        <img id="pipBtn" src="https://cdn-icons-png.flaticon.com/512/189/189665.png" onclick="togglePiP()" alt="PiP">
         <img id="fullscreenBtn" src="https://cdn-icons-png.flaticon.com/512/3354/3354155.png" onclick="toggleFullscreen()" alt="Fullscreen">
       </div>
     </div>
@@ -175,6 +185,7 @@
 <script>
 const $ = id => document.getElementById(id);
 const player = $("player");
+const wrapper = $("videoWrapper");
 const p = new URLSearchParams(location.search);
 const url = decodeURIComponent(p.get("url") || "");
 const title = decodeURIComponent(p.get("title") || "Unknown Title");
@@ -183,8 +194,11 @@ const cast = decodeURIComponent(p.get("cast") || "Unknown");
 const year = decodeURIComponent(p.get("year") || "");
 const type = decodeURIComponent(p.get("type") || "");
 const poster = decodeURIComponent(p.get("poster") || "");
+const subtitle = decodeURIComponent(p.get("sub") || "");
 
 $("videoSource").src = url;
+if (subtitle) $("subTrack").src = subtitle;
+
 $("titleText").innerText = title;
 $("movieTitle").innerText = title;
 $("metaText").innerText = `${year} · ${type}`;
@@ -193,16 +207,12 @@ $("castText").innerText = cast;
 $("bgPoster").style.backgroundImage = `url('${poster}')`;
 player.poster = poster;
 
-const playBtn = $("playBtn");
-const centerPlayBtn = $("centerPlayBtn");
-const volumeBtn = $("volumeBtn");
-const fullscreenBtn = $("fullscreenBtn");
-const progressBar = $("progressBar");
-const tooltip = $("tooltip");
-const knob = $("progressKnob");
-const container = $("progressContainer");
-const currentTimeDisplay = $("currentTime");
-const totalTimeDisplay = $("totalTime");
+const playBtn = $("playBtn"), centerPlayBtn = $("centerPlayBtn"),
+      volumeBtn = $("volumeBtn"), fullscreenBtn = $("fullscreenBtn"),
+      pipBtn = $("pipBtn"),
+      progressBar = $("progressBar"), tooltip = $("tooltip"),
+      knob = $("progressKnob"), container = $("progressContainer"),
+      currentTimeDisplay = $("currentTime"), totalTimeDisplay = $("totalTime");
 
 const storageKey = "player_" + btoa(url);
 player.currentTime = parseFloat(localStorage.getItem(storageKey)) || 0;
@@ -237,6 +247,14 @@ function toggleFullscreen() {
   } else {
     document.exitFullscreen();
     fullscreenBtn.src = "https://cdn-icons-png.flaticon.com/512/3354/3354155.png";
+  }
+}
+
+function togglePiP() {
+  if (document.pictureInPictureElement) {
+    document.exitPictureInPicture();
+  } else if (player.requestPictureInPicture) {
+    player.requestPictureInPicture().catch(() => alert("❌ PiP not supported"));
   }
 }
 
@@ -285,9 +303,23 @@ document.addEventListener("mousemove", e => {
   player.currentTime = percent * player.duration;
 });
 
+function changeSpeed(rate) {
+  player.playbackRate = parseFloat(rate);
+}
+
 function copyLink() {
   navigator.clipboard.writeText(location.href).then(() => alert("🔗 Link copied!"));
 }
+
+// Auto-hide controls
+let controlTimeout;
+function showControls() {
+  wrapper.classList.add("show-controls");
+  wrapper.classList.remove("hide-ui");
+  clearTimeout(controlTimeout);
+  controlTimeout = setTimeout(() => wrapper.classList.add("hide-ui"), 3000);
+}
+showControls();
 </script>
 
 </body>
