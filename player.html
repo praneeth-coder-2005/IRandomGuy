@@ -62,9 +62,50 @@
       align-items: center;
       justify-content: center;
       z-index: 10;
+      pointer-events: none;
     }
     .pause-overlay.visible {
       display: flex;
+    }
+    .play-button {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 0, 0, 0.7);
+      border: none;
+      color: white;
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      font-size: 30px;
+      cursor: pointer;
+      display: none;
+      z-index: 15;
+      transition: all 0.3s ease;
+    }
+    .play-button:hover {
+      background: rgba(0, 0, 0, 0.9);
+      transform: translate(-50%, -50%) scale(1.1);
+    }
+    .play-button.visible {
+      display: block;
+    }
+    .error-message {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(255, 0, 0, 0.8);
+      color: white;
+      padding: 20px;
+      border-radius: 8px;
+      text-align: center;
+      display: none;
+      z-index: 20;
+    }
+    .error-message.visible {
+      display: block;
     }
     .spinner {
       border: 4px solid rgba(255,255,255,0.2);
@@ -186,12 +227,18 @@
 </div>
 
 <div class="video-wrapper" id="videoWrapper">
-  <video id="player" preload="auto" controlslist="nodownload">
+  <video id="player" preload="auto" controls controlslist="nodownload">
     <source id="videoSource" src="" type="video/mp4" />
     <track id="subtitleTrack" kind="subtitles" srclang="en" label="English" hidden>
+    Your browser does not support the video tag.
   </video>
   <div class="pause-overlay" id="pauseOverlay">
     <div class="spinner" id="spinner"></div>
+  </div>
+  <button class="play-button" id="playButton" onclick="togglePlay()">▶</button>
+  <div class="error-message" id="errorMessage">
+    <h3>Video Error</h3>
+    <p>Failed to load video. Please check the URL or try again later.</p>
   </div>
   <img src="https://cdn-icons-png.flaticon.com/512/4546/4546899.png" id="muteIcon" class="mute-icon" style="display:none;" />
   </div>
@@ -223,7 +270,11 @@
   </div>
 
   <div style="margin-top:15px;">
-    <small>Press <kbd>space</kbd> to play/pause, <kbd>→</kbd>/<kbd>←</kbd> to seek, <kbd>F</kbd> for fullscreen</small>
+    <small>
+      <strong>Keyboard Controls:</strong><br>
+      <kbd>Space</kbd> - Play/Pause • <kbd>F</kbd> - Fullscreen • <kbd>M</kbd> - Mute<br>
+      <kbd>←</kbd>/<kbd>→</kbd> - Seek ±10s • <kbd>↑</kbd>/<kbd>↓</kbd> - Volume ±10%
+    </small>
   </div>
 
   <button class="share-btn" onclick="copyLink()">🔗 Share This</button>
@@ -243,6 +294,15 @@ const pauseOverlay = $("pauseOverlay");
 const spinner = $("spinner");
 const muteIcon = $("muteIcon");
 const subTrack = $("subtitleTrack");
+const playButton = $("playButton");
+const errorMessage = $("errorMessage");
+
+// Load the video after setting the source
+if (url) {
+  player.load();
+} else {
+  errorMessage.classList.add("visible");
+}
 
 function toggleDesc(event) {
   const t = $("descText");
@@ -285,7 +345,18 @@ async function loadMovieInfo() {
 loadMovieInfo();
 
 function toggleSubtitles() {
-  subTrack.hidden = !$("subToggle").checked;
+  const track = player.textTracks[0];
+  if ($("subToggle").checked) {
+    if (track) {
+      track.mode = "showing";
+    }
+    subTrack.hidden = false;
+  } else {
+    if (track) {
+      track.mode = "hidden";
+    }
+    subTrack.hidden = true;
+  }
 }
 function changeSpeed(val) {
   player.playbackRate = parseFloat(val);
@@ -294,15 +365,59 @@ function copyLink() {
   navigator.clipboard.writeText(location.href).then(() => alert("Link copied!"));
 }
 
-player.addEventListener("pause", () => pauseOverlay.classList.add("visible"));
-player.addEventListener("play", () => pauseOverlay.classList.remove("visible"));
-player.addEventListener("waiting", () => spinner.style.display = "block");
-player.addEventListener("playing", () => spinner.style.display = "none");
+// Video event handlers
+player.addEventListener("loadstart", () => {
+  pauseOverlay.classList.add("visible");
+  spinner.style.display = "block";
+  errorMessage.classList.remove("visible");
+});
+
+player.addEventListener("loadeddata", () => {
+  pauseOverlay.classList.remove("visible");
+  spinner.style.display = "none";
+  if (player.paused) {
+    playButton.classList.add("visible");
+  }
+});
+
+player.addEventListener("pause", () => {
+  playButton.classList.add("visible");
+});
+
+player.addEventListener("play", () => {
+  playButton.classList.remove("visible");
+});
+
+player.addEventListener("waiting", () => {
+  pauseOverlay.classList.add("visible");
+  spinner.style.display = "block";
+});
+
+player.addEventListener("playing", () => {
+  pauseOverlay.classList.remove("visible");
+  spinner.style.display = "none";
+  playButton.classList.remove("visible");
+});
+
+player.addEventListener("error", () => {
+  pauseOverlay.classList.remove("visible");
+  spinner.style.display = "none";
+  playButton.classList.remove("visible");
+  errorMessage.classList.add("visible");
+});
+
 player.addEventListener("volumechange", () => {
   muteIcon.style.display = player.muted ? "block" : "none";
 });
 
+player.addEventListener("ended", () => {
+  playButton.classList.add("visible");
+});
+
 document.addEventListener("keydown", e => {
+  // Only handle keyboard shortcuts when not typing in input fields
+  if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
+  
   if (e.code === "Space") {
     e.preventDefault();
     togglePlay();
@@ -313,21 +428,65 @@ document.addEventListener("keydown", e => {
   }
   if (e.key === "ArrowRight") {
     e.preventDefault();
-    player.currentTime += 10;
+    player.currentTime = Math.min(player.currentTime + 10, player.duration || 0);
   }
   if (e.key === "ArrowLeft") {
     e.preventDefault();
-    player.currentTime -= 10;
+    player.currentTime = Math.max(player.currentTime - 10, 0);
+  }
+  if (e.key === "ArrowUp") {
+    e.preventDefault();
+    player.volume = Math.min(player.volume + 0.1, 1);
+  }
+  if (e.key === "ArrowDown") {
+    e.preventDefault();
+    player.volume = Math.max(player.volume - 0.1, 0);
+  }
+  if (e.key === "m" || e.key === "M") {
+    e.preventDefault();
+    player.muted = !player.muted;
   }
 });
 
 function togglePlay() {
-  if (player.paused) player.play(); else player.pause();
+  if (player.paused) {
+    player.play().catch(error => {
+      console.error("Error playing video:", error);
+      errorMessage.classList.add("visible");
+    });
+  } else {
+    player.pause();
+  }
 }
+
 function toggleFullscreen() {
-  if (!document.fullscreenElement) player.requestFullscreen();
-  else document.exitFullscreen();
+  const videoWrapper = $("videoWrapper");
+  if (!document.fullscreenElement) {
+    if (videoWrapper.requestFullscreen) {
+      videoWrapper.requestFullscreen();
+    } else if (videoWrapper.webkitRequestFullscreen) {
+      videoWrapper.webkitRequestFullscreen();
+    } else if (videoWrapper.msRequestFullscreen) {
+      videoWrapper.msRequestFullscreen();
+    }
+  } else {
+    if (document.exitFullscreen) {
+      document.exitFullscreen();
+    } else if (document.webkitExitFullscreen) {
+      document.webkitExitFullscreen();
+    } else if (document.msExitFullscreen) {
+      document.msExitFullscreen();
+    }
+  }
 }
+
+// Add click event to video wrapper for play/pause
+$("videoWrapper").addEventListener("click", (e) => {
+  if (e.target === player || e.target === playButton) {
+    return; // Let the video controls handle it
+  }
+  togglePlay();
+});
 </script>
 </body>
 </html>
