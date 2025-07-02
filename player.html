@@ -5,60 +5,26 @@
   <title>Troop Player</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
-    body {
-      margin: 0;
-      background: #111;
-      font-family: sans-serif;
-      color: white;
-    }
-
+    body { margin: 0; background: #111; font-family: sans-serif; color: white; }
     .blur-bg {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-size: cover;
-      background-position: center;
-      filter: blur(20px);
-      opacity: 0.3;
-      z-index: -1;
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background-size: cover; background-position: center;
+      filter: blur(20px); opacity: 0.3; z-index: -1;
     }
-
     .top-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: rgba(0, 0, 0, 0.6);
-      padding: 10px 15px;
-      position: sticky;
-      top: 0;
-      z-index: 1000;
+      display: flex; justify-content: space-between; align-items: center;
+      background: rgba(0, 0, 0, 0.6); padding: 10px 15px;
+      position: sticky; top: 0; z-index: 1000;
     }
-
     .top-bar button {
-      background: rgba(255, 255, 255, 0.1);
-      color: white;
-      border: none;
-      padding: 6px 12px;
-      border-radius: 4px;
-      font-size: 14px;
-      cursor: pointer;
+      background: rgba(255,255,255,0.1); color: white;
+      border: none; padding: 6px 12px; border-radius: 4px;
+      font-size: 14px; cursor: pointer;
     }
-
     .video-wrapper {
-      position: relative;
-      background: black;
-      height: 30vh;
-      z-index: 3;
+      position: relative; background: black; margin-bottom: 20px;
     }
-
-    video {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      background: black;
-    }
+    video { width: 100%; height: auto; }
 
     .controls {
       background: rgba(0, 0, 0, 0.6);
@@ -70,61 +36,40 @@
 
     .progress-container {
       position: relative;
-      height: 6px;
-      background: #444;
-      border-radius: 3px;
-      cursor: pointer;
+      height: 6px; width: 100%;
+      background: #444; border-radius: 3px; cursor: pointer;
     }
 
     .progress-bar {
-      height: 6px;
-      background: #1e88e5;
-      border-radius: 3px;
-      width: 0%;
+      height: 6px; background: #1e88e5;
+      border-radius: 3px; width: 0%;
     }
 
     .progress-knob {
       position: absolute;
-      top: -5px;
-      width: 14px;
-      height: 14px;
-      background: #fff;
-      border-radius: 50%;
+      top: -5px; width: 14px; height: 14px;
+      background: #fff; border-radius: 50%;
       transform: translateX(-50%);
-      pointer-events: auto;
-      cursor: grab;
+      pointer-events: auto; cursor: grab;
     }
 
     .tooltip {
-      position: absolute;
-      bottom: 100%;
-      transform: translateX(-50%);
-      font-size: 11px;
-      background: #000;
-      color: #fff;
-      padding: 2px 6px;
-      border-radius: 3px;
-      white-space: nowrap;
+      position: absolute; bottom: 100%; transform: translateX(-50%);
+      font-size: 11px; background: #000; color: #fff;
+      padding: 2px 6px; border-radius: 3px; white-space: nowrap;
       display: none;
     }
 
     .bar-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      display: flex; justify-content: space-between; align-items: center;
     }
 
-    .bar-left,
-    .bar-right {
-      display: flex;
-      align-items: center;
-      gap: 10px;
+    .bar-left, .bar-right {
+      display: flex; align-items: center; gap: 10px;
     }
 
-    .bar-left img,
-    .bar-right img {
-      width: 20px;
-      height: 20px;
+    .bar-left img, .bar-right img {
+      width: 20px; height: 20px;
       filter: brightness(0) invert(1);
       cursor: pointer;
     }
@@ -134,269 +79,222 @@
     }
 
     .info {
-      position: relative;
-      z-index: 1;
       padding: 20px;
-      background: rgba(17, 17, 17, 0.95);
-      margin-top: 10px;
     }
 
-    .info h2 {
-      margin: 8px 0;
+    .info h2 { margin: 8px 0; }
+    .info .meta { font-size: 13px; color: #ccc; }
+    .info p { margin-top: 10px; line-height: 1.4; }
+
+    .cast-grid {
+      margin-top: 15px;
+      display: flex;
+      gap: 12px;
+      overflow-x: auto;
     }
 
-    .info .meta {
-      font-size: 13px;
-      color: #ccc;
+    .cast-grid div {
+      flex: 0 0 auto;
+      width: 80px;
+      font-size: 12px;
+      text-align: center;
     }
 
-    .info p {
-      margin-top: 10px;
-      line-height: 1.5;
+    .cast-grid img {
+      width: 100%;
+      border-radius: 6px;
     }
 
     .share-btn {
-      background: #1e88e5;
-      border: none;
-      color: white;
-      padding: 8px 14px;
-      border-radius: 5px;
-      font-size: 14px;
-      margin-top: 12px;
-      cursor: pointer;
-    }
-
-    #castGrid,
-    #recommendGrid {
-      display: flex;
-      overflow-x: auto;
-      gap: 12px;
-      margin-top: 15px;
-      padding-bottom: 10px;
-    }
-
-    #castGrid div,
-    #recommendGrid div {
-      flex: 0 0 auto;
-      width: 80px;
-      text-align: center;
-      font-size: 12px;
-    }
-
-    #castGrid img,
-    #recommendGrid img {
-      width: 100%;
-      border-radius: 5px;
+      background: #1e88e5; border: none; color: white;
+      padding: 8px 14px; border-radius: 5px;
+      font-size: 14px; margin-top: 12px; cursor: pointer;
     }
   </style>
 </head>
 <body>
 
-  <div class="blur-bg" id="bgPoster"></div>
+<div class="blur-bg" id="bgPoster"></div>
 
-  <div class="top-bar">
-    <button onclick="history.back()">⬅ Back</button>
-    <div id="movieTitle">Now Playing</div>
-    <button onclick="location.href='index.html'">🏠 Home</button>
-  </div>
+<div class="top-bar">
+  <button onclick="history.back()">⬅ Back</button>
+  <div id="movieTitle">Now Playing</div>
+  <button onclick="location.href='index.html'">🏠 Home</button>
+</div>
 
-  <div class="video-wrapper">
-    <video id="player" poster="" preload="metadata">
-      <source id="videoSource" src="" type="video/mp4" />
-    </video>
+<div class="video-wrapper">
+  <video id="player" poster="" preload="metadata">
+    <source id="videoSource" src="" type="video/mp4" />
+  </video>
 
-    <div class="controls">
-      <div class="progress-container" id="progressContainer">
-        <div class="progress-bar" id="progressBar"></div>
-        <div class="progress-knob" id="progressKnob"></div>
-        <div class="tooltip" id="tooltip"></div>
+  <div class="controls">
+    <div class="progress-container" id="progressContainer">
+      <div class="progress-bar" id="progressBar"></div>
+      <div class="progress-knob" id="progressKnob"></div>
+      <div class="tooltip" id="tooltip"></div>
+    </div>
+
+    <div class="bar-row">
+      <div class="bar-left">
+        <img id="playBtn" src="https://cdn-icons-png.flaticon.com/512/2088/2088569.png" onclick="togglePlay()" alt="Play">
+        <img src="https://cdn-icons-png.flaticon.com/512/9229/9229077.png" onclick="skip(-10)" alt="Back 10s">
+        <img src="https://cdn-icons-png.flaticon.com/512/5293/5293447.png" onclick="skip(10)" alt="Forward 10s">
+        <img id="volumeBtn" src="https://cdn-icons-png.flaticon.com/512/565/565296.png" onclick="toggleMute()" alt="Volume">
+        <span class="time-display"><span id="currentTime">0:00</span> / <span id="totalTime">0:00</span></span>
       </div>
-
-      <div class="bar-row">
-        <div class="bar-left">
-          <img id="playBtn" src="https://cdn-icons-png.flaticon.com/512/2088/2088569.png" onclick="togglePlay()" alt="Play">
-          <img src="https://cdn-icons-png.flaticon.com/512/9229/9229077.png" onclick="skip(-10)" alt="Back 10s">
-          <img src="https://cdn-icons-png.flaticon.com/512/5293/5293447.png" onclick="skip(10)" alt="Forward 10s">
-          <img id="volumeBtn" src="https://cdn-icons-png.flaticon.com/512/565/565296.png" onclick="toggleMute()" alt="Volume">
-          <span class="time-display"><span id="currentTime">0:00</span> / <span id="totalTime">0:00</span></span>
-        </div>
-        <div class="bar-right">
-          <img id="fullscreenBtn" src="https://cdn-icons-png.flaticon.com/512/3354/3354155.png" onclick="toggleFullscreen()" alt="Fullscreen">
-        </div>
+      <div class="bar-right">
+        <img id="fullscreenBtn" src="https://cdn-icons-png.flaticon.com/512/3354/3354155.png" onclick="toggleFullscreen()" alt="Fullscreen">
       </div>
     </div>
   </div>
+</div>
 
-  <div class="info">
-    <h2 id="titleText">Loading...</h2>
-    <div class="meta" id="metaText"></div>
-    <p id="descText"></p>
+<div class="info">
+  <h2 id="titleText">Loading...</h2>
+  <div class="meta" id="metaText">Year · Type</div>
+  <p id="descText">Loading description...</p>
 
-    <h3 style="margin-top:20px;">Cast</h3>
-    <div id="castGrid"></div>
+  <h3 style="margin-top: 20px;">Cast</h3>
+  <div class="cast-grid" id="castGrid">Loading...</div>
 
-    <h3 style="margin-top:20px;">Recommended</h3>
-    <div id="recommendGrid"></div>
+  <button class="share-btn" onclick="copyLink()">🔗 Share This</button>
+</div>
 
-    <button class="share-btn" onclick="copyLink()">🔗 Share This</button>
-  </div>
+<script>
+const TMDB_API_KEY = "bb5f40c5be4b24660cbdc20c2409835e";
+const $ = id => document.getElementById(id);
+const player = $("player");
+const p = new URLSearchParams(location.search);
+const url = decodeURIComponent(p.get("url") || "");
+const title = decodeURIComponent(p.get("title") || "Unknown Title");
 
-  <script>
-    const TMDB_API_KEY = "bb5f40c5be4b24660cbdc20c2409835e";
-    const $ = id => document.getElementById(id);
-    const p = new URLSearchParams(location.search);
-    const title = decodeURIComponent(p.get("title") || "RRR");
-    const url = decodeURIComponent(p.get("url") || "");
+$("videoSource").src = url;
+$("movieTitle").innerText = title;
+$("player").poster = "";
+const storageKey = "player_" + btoa(url);
+player.currentTime = parseFloat(localStorage.getItem(storageKey)) || 0;
 
-    $("movieTitle").innerText = title;
-    $("videoSource").src = url;
+// TMDb fetch
+async function loadTMDbData() {
+  try {
+    const res = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(title)}`);
+    const search = await res.json();
+    const movie = search.results?.[0];
+    if (!movie) throw new Error("Not found");
 
-    const player = $("player"),
-          playBtn = $("playBtn"),
-          volumeBtn = $("volumeBtn"),
-          fullscreenBtn = $("fullscreenBtn"),
-          progressBar = $("progressBar"),
-          tooltip = $("tooltip"),
-          knob = $("progressKnob"),
-          container = $("progressContainer"),
-          currentTimeDisplay = $("currentTime"),
-          totalTimeDisplay = $("totalTime"),
-          storageKey = "player_" + btoa(url);
+    const detailRes = await fetch(`https://api.themoviedb.org/3/movie/${movie.id}?api_key=${TMDB_API_KEY}&append_to_response=credits`);
+    const data = await detailRes.json();
 
-    if (!url) alert("❌ No video URL provided.");
-    player.currentTime = parseFloat(localStorage.getItem(storageKey)) || 0;
+    $("titleText").innerText = data.title;
+    $("metaText").innerText = `${(data.release_date || "").slice(0, 4)} · ${data.genres?.[0]?.name || ''}`;
+    $("descText").innerText = data.overview || "No description available.";
+    $("bgPoster").style.backgroundImage = `url(https://image.tmdb.org/t/p/w500${data.backdrop_path || data.poster_path})`;
+    $("player").poster = `https://image.tmdb.org/t/p/w500${data.poster_path}`;
 
-    function formatTime(t) {
-      const m = Math.floor(t / 60);
-      const s = Math.floor(t % 60).toString().padStart(2, "0");
-      return `${m}:${s}`;
-    }
-
-    function togglePlay() {
-      if (player.paused) {
-        player.play();
-        playBtn.src = "https://cdn-icons-png.flaticon.com/512/1214/1214679.png";
-      } else {
-        player.pause();
-        playBtn.src = "https://cdn-icons-png.flaticon.com/512/2088/2088569.png";
+    $("castGrid").innerHTML = "";
+    data.credits.cast.slice(0, 15).forEach(actor => {
+      if (actor.profile_path) {
+        $("castGrid").innerHTML += `
+          <div>
+            <img src="https://image.tmdb.org/t/p/w185${actor.profile_path}" />
+            <div>${actor.name}</div>
+          </div>`;
       }
-    }
-
-    function toggleMute() {
-      player.muted = !player.muted;
-      volumeBtn.src = player.muted
-        ? "https://cdn-icons-png.flaticon.com/512/4546/4546899.png"
-        : "https://cdn-icons-png.flaticon.com/512/565/565296.png";
-    }
-
-    function toggleFullscreen() {
-      if (!document.fullscreenElement) {
-        player.requestFullscreen();
-        fullscreenBtn.src = "https://cdn-icons-png.flaticon.com/512/3502/3502504.png";
-      } else {
-        document.exitFullscreen();
-        fullscreenBtn.src = "https://cdn-icons-png.flaticon.com/512/3354/3354155.png";
-      }
-    }
-
-    function skip(sec) {
-      player.currentTime += sec;
-    }
-
-    player.addEventListener("timeupdate", () => {
-      const percent = (player.currentTime / player.duration) * 100;
-      progressBar.style.width = percent + "%";
-      knob.style.left = percent + "%";
-      currentTimeDisplay.innerText = formatTime(player.currentTime);
-      localStorage.setItem(storageKey, player.currentTime);
     });
+  } catch (e) {
+    $("descText").innerText = "Could not load movie info.";
+    $("castGrid").innerText = "No cast available.";
+  }
+}
 
-    player.addEventListener("loadedmetadata", () => {
-      totalTimeDisplay.innerText = formatTime(player.duration);
-    });
+loadTMDbData();
 
-    container.addEventListener("click", e => {
-      const rect = container.getBoundingClientRect();
-      const percent = (e.clientX - rect.left) / rect.width;
-      player.currentTime = percent * player.duration;
-    });
+const playBtn = $("playBtn"), volumeBtn = $("volumeBtn"), fullscreenBtn = $("fullscreenBtn");
+const progressBar = $("progressBar"), tooltip = $("tooltip"), knob = $("progressKnob"), container = $("progressContainer");
+const currentTimeDisplay = $("currentTime"), totalTimeDisplay = $("totalTime");
 
-    container.addEventListener("mousemove", e => {
-      const rect = container.getBoundingClientRect();
-      const percent = (e.clientX - rect.left) / rect.width;
-      tooltip.innerText = formatTime(percent * player.duration);
-      tooltip.style.left = `${e.clientX - rect.left}px`;
-      tooltip.style.display = "block";
-    });
+function formatTime(t) {
+  const m = Math.floor(t / 60);
+  const s = Math.floor(t % 60).toString().padStart(2, "0");
+  return `${m}:${s}`;
+}
 
-    container.addEventListener("mouseleave", () => tooltip.style.display = "none");
+function togglePlay() {
+  if (player.paused) {
+    player.play();
+    playBtn.src = "https://cdn-icons-png.flaticon.com/512/1214/1214679.png";
+  } else {
+    player.pause();
+    playBtn.src = "https://cdn-icons-png.flaticon.com/512/2088/2088569.png";
+  }
+}
 
-    let dragging = false;
-    knob.addEventListener("mousedown", () => dragging = true);
-    document.addEventListener("mouseup", () => dragging = false);
-    document.addEventListener("mousemove", e => {
-      if (!dragging) return;
-      const rect = container.getBoundingClientRect();
-      const percent = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-      player.currentTime = percent * player.duration;
-    });
+function toggleMute() {
+  player.muted = !player.muted;
+  volumeBtn.src = player.muted
+    ? "https://cdn-icons-png.flaticon.com/512/4546/4546899.png"
+    : "https://cdn-icons-png.flaticon.com/512/565/565296.png";
+}
 
-    function copyLink() {
-      navigator.clipboard.writeText(location.href).then(() => alert("🔗 Link copied!"));
-    }
+function toggleFullscreen() {
+  if (!document.fullscreenElement) {
+    player.requestFullscreen();
+    fullscreenBtn.src = "https://cdn-icons-png.flaticon.com/512/3502/3502504.png";
+  } else {
+    document.exitFullscreen();
+    fullscreenBtn.src = "https://cdn-icons-png.flaticon.com/512/3354/3354155.png";
+  }
+}
 
-    async function fetchMovieData() {
-      try {
-        const search = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(title)}`);
-        const res = await search.json();
-        const movie = res.results?.[0];
-        if (!movie) throw "Movie not found";
+function skip(sec) {
+  player.currentTime += sec;
+}
 
-        const details = await fetch(`https://api.themoviedb.org/3/movie/${movie.id}?api_key=${TMDB_API_KEY}&append_to_response=credits,recommendations`);
-        const json = await details.json();
+function updateUI() {
+  const percent = (player.currentTime / player.duration) * 100;
+  progressBar.style.width = percent + "%";
+  knob.style.left = percent + "%";
+  currentTimeDisplay.innerText = formatTime(player.currentTime);
+  localStorage.setItem(storageKey, player.currentTime);
+}
 
-        $("titleText").innerText = json.title;
-        $("metaText").innerText = `${(json.release_date || '').slice(0, 4)} · ${json.genres?.[0]?.name || ''}`;
-        $("descText").innerText = json.overview || "No description.";
-        const posterURL = json.poster_path ? `https://image.tmdb.org/t/p/w500${json.poster_path}` : "";
-        $("bgPoster").style.backgroundImage = `url('${posterURL}')`;
-        player.poster = posterURL;
+player.addEventListener("timeupdate", updateUI);
+player.addEventListener("loadedmetadata", () => {
+  totalTimeDisplay.innerText = formatTime(player.duration);
+});
+player.addEventListener("ended", () => {
+  playBtn.src = "https://cdn-icons-png.flaticon.com/512/2088/2088569.png";
+});
 
-        $("castGrid").innerHTML = "";
-        json.credits?.cast?.slice(0, 15).forEach(actor => {
-          if (actor.profile_path) {
-            $("castGrid").innerHTML += `
-              <div>
-                <img src="https://image.tmdb.org/t/p/w185${actor.profile_path}" />
-                <div>${actor.name}</div>
-              </div>`;
-          }
-        });
+container.addEventListener("click", e => {
+  const rect = container.getBoundingClientRect();
+  const percent = (e.clientX - rect.left) / rect.width;
+  player.currentTime = percent * player.duration;
+});
 
-        $("recommendGrid").innerHTML = "";
-        json.recommendations?.results?.slice(0, 12).forEach(rec => {
-          if (rec.poster_path) {
-            $("recommendGrid").innerHTML += `
-              <div onclick="goTo('${rec.title}')">
-                <img src="https://image.tmdb.org/t/p/w185${rec.poster_path}" />
-                <div>${rec.title}</div>
-              </div>`;
-          }
-        });
-      } catch {
-        $("titleText").innerText = "Not Found";
-        $("descText").innerText = "Unable to fetch movie data.";
-      }
-    }
+container.addEventListener("mousemove", e => {
+  const rect = container.getBoundingClientRect();
+  const percent = (e.clientX - rect.left) / rect.width;
+  tooltip.innerText = formatTime(percent * player.duration);
+  tooltip.style.left = `${e.clientX - rect.left}px`;
+  tooltip.style.display = "block";
+});
+container.addEventListener("mouseleave", () => tooltip.style.display = "none");
 
-    function goTo(t) {
-      const videoUrl = encodeURIComponent(url);
-      const safeTitle = encodeURIComponent(t);
-      location.href = `player.html?title=${safeTitle}&url=${videoUrl}`;
-    }
+let dragging = false;
+knob.addEventListener("mousedown", () => dragging = true);
+document.addEventListener("mouseup", () => dragging = false);
+document.addEventListener("mousemove", e => {
+  if (!dragging) return;
+  const rect = container.getBoundingClientRect();
+  const percent = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+  player.currentTime = percent * player.duration;
+});
 
-    fetchMovieData();
-  </script>
+function copyLink() {
+  navigator.clipboard.writeText(location.href).then(() => alert("🔗 Link copied!"));
+}
+</script>
 
 </body>
 </html>
