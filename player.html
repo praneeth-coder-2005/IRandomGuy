@@ -45,81 +45,9 @@
       background: black;
     }
 
-    .controls {
-      background: rgba(0, 0, 0, 0.6);
-      padding: 10px 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .progress-container {
-      position: relative;
-      height: 6px;
-      background: #444;
-      border-radius: 3px;
-      cursor: pointer;
-    }
-
-    .progress-bar {
-      height: 6px;
-      background: #1e88e5;
-      border-radius: 3px;
-      width: 0%;
-    }
-
-    .progress-knob {
-      position: absolute;
-      top: -5px;
-      width: 14px; height: 14px;
-      background: #fff;
-      border-radius: 50%;
-      transform: translateX(-50%);
-      pointer-events: auto;
-      cursor: grab;
-    }
-
-    .tooltip {
-      position: absolute;
-      bottom: 100%;
-      transform: translateX(-50%);
-      font-size: 11px;
-      background: #000; color: #fff;
-      padding: 2px 6px;
-      border-radius: 3px;
-      white-space: nowrap;
-      display: none;
-    }
-
-    .bar-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .bar-left, .bar-right {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .bar-left img, .bar-right img {
-      width: 20px; height: 20px;
-      filter: brightness(0) invert(1);
-      cursor: pointer;
-    }
-
-    .time-display {
-      font-size: 13px;
-    }
-
     .info {
-      position: relative;
-      z-index: 1;
       padding: 20px;
       background: rgba(17, 17, 17, 0.95);
-      backdrop-filter: blur(2px);
-      margin-top: 10px;
     }
 
     .info h2 { margin: 8px 0; }
@@ -136,7 +64,7 @@
       cursor: pointer;
     }
 
-    #castGrid {
+    #castGrid, #recommendGrid {
       display: flex;
       overflow-x: auto;
       gap: 12px;
@@ -144,16 +72,26 @@
       padding-bottom: 10px;
     }
 
-    #castGrid div {
+    #castGrid div, #recommendGrid div {
       flex: 0 0 auto;
       width: 80px;
       text-align: center;
       font-size: 12px;
     }
 
-    #castGrid img {
+    #castGrid img, #recommendGrid img {
       width: 100%;
       border-radius: 5px;
+    }
+
+    .fallback {
+      width: 100%;
+      height: 100%;
+      display: grid;
+      place-items: center;
+      background: #222;
+      color: #aaa;
+      font-size: 14px;
     }
   </style>
 </head>
@@ -170,165 +108,92 @@
 <div class="video-wrapper">
   <video id="player" poster="" controls>
     <source id="videoSource" src="" type="video/mp4" />
+    <div class="fallback">⚠️ Video failed to load</div>
   </video>
-
-  <div class="controls">
-    <div class="progress-container" id="progressContainer">
-      <div class="progress-bar" id="progressBar"></div>
-      <div class="progress-knob" id="progressKnob"></div>
-      <div class="tooltip" id="tooltip"></div>
-    </div>
-
-    <div class="bar-row">
-      <div class="bar-left">
-        <img id="playBtn" src="https://cdn-icons-png.flaticon.com/512/2088/2088569.png" onclick="togglePlay()" alt="Play">
-        <img src="https://cdn-icons-png.flaticon.com/512/9229/9229077.png" onclick="skip(-10)" alt="Back 10s">
-        <img src="https://cdn-icons-png.flaticon.com/512/5293/5293447.png" onclick="skip(10)" alt="Forward 10s">
-        <img id="volumeBtn" src="https://cdn-icons-png.flaticon.com/512/565/565296.png" onclick="toggleMute()" alt="Volume">
-        <span class="time-display"><span id="currentTime">0:00</span> / <span id="totalTime">0:00</span></span>
-      </div>
-      <div class="bar-right">
-        <img id="fullscreenBtn" src="https://cdn-icons-png.flaticon.com/512/3354/3354155.png" onclick="toggleFullscreen()" alt="Fullscreen">
-      </div>
-    </div>
-  </div>
 </div>
 
 <div class="info">
   <h2 id="titleText">Loading...</h2>
   <div class="meta" id="metaText"></div>
   <p id="descText"></p>
+
   <h3 style="margin-top:20px;">Cast</h3>
   <div id="castGrid"></div>
+
+  <h3 style="margin-top:20px;">Recommended</h3>
+  <div id="recommendGrid"></div>
+
   <button class="share-btn" onclick="copyLink()">🔗 Share This</button>
 </div>
 
 <script>
-const TMDB_API_KEY = "bb5f40c5be4b24660cbdc20c2409835e"; // Replace with your key
+const TMDB_API_KEY = "bb5f40c5be4b24660cbdc20c2409835e";
 const $ = id => document.getElementById(id);
 const p = new URLSearchParams(location.search);
 const title = decodeURIComponent(p.get("title") || "RRR");
+const url = decodeURIComponent(p.get("url") || "");
+
 $("movieTitle").innerText = title;
+$("videoSource").src = url;
 
-const player = $("player"),
-      playBtn = $("playBtn"),
-      volumeBtn = $("volumeBtn"),
-      fullscreenBtn = $("fullscreenBtn"),
-      progressBar = $("progressBar"),
-      tooltip = $("tooltip"),
-      knob = $("progressKnob"),
-      container = $("progressContainer");
-
-const currentTimeDisplay = $("currentTime"),
-      totalTimeDisplay = $("totalTime");
+if (!url) alert("❌ No video URL provided.");
 
 async function fetchMovieData() {
-  const search = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(title)}`);
-  const res = await search.json();
-  const movie = res.results?.[0];
-  if (!movie) return;
+  try {
+    const search = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(title)}`);
+    const res = await search.json();
+    const movie = res.results?.[0];
+    if (!movie) throw "Movie not found";
 
-  const movieDetails = await fetch(`https://api.themoviedb.org/3/movie/${movie.id}?api_key=${TMDB_API_KEY}&append_to_response=credits`);
-  const json = await movieDetails.json();
+    const details = await fetch(`https://api.themoviedb.org/3/movie/${movie.id}?api_key=${TMDB_API_KEY}&append_to_response=credits,recommendations`);
+    const json = await details.json();
 
-  $("titleText").innerText = json.title || json.name;
-  $("metaText").innerText = (json.release_date || '').split('-')[0];
-  $("descText").innerText = json.overview;
-  $("bgPoster").style.backgroundImage = `url(https://image.tmdb.org/t/p/w500${json.poster_path})`;
-  $("player").poster = `https://image.tmdb.org/t/p/w500${json.poster_path}`;
-  $("videoSource").src = decodeURIComponent(p.get("url") || "");
+    $("titleText").innerText = json.title;
+    $("metaText").innerText = `${(json.release_date || '').slice(0,4)} · ${json.genres?.[0]?.name || ''}`;
+    $("descText").innerText = json.overview || "No description.";
 
-  $("castGrid").innerHTML = "";
-  json.credits?.cast?.slice(0, 15).forEach(actor => {
-    if (actor.profile_path) {
-      $("castGrid").innerHTML += `
-        <div>
-          <img src="https://image.tmdb.org/t/p/w185${actor.profile_path}" />
-          <div>${actor.name}</div>
-        </div>`;
-    }
-  });
-}
+    const posterURL = json.poster_path ? `https://image.tmdb.org/t/p/w500${json.poster_path}` : "";
+    $("bgPoster").style.backgroundImage = `url('${posterURL}')`;
+    $("player").poster = posterURL;
 
-fetchMovieData();
+    $("castGrid").innerHTML = "";
+    json.credits?.cast?.slice(0, 15).forEach(actor => {
+      if (actor.profile_path) {
+        $("castGrid").innerHTML += `
+          <div>
+            <img src="https://image.tmdb.org/t/p/w185${actor.profile_path}" />
+            <div>${actor.name}</div>
+          </div>`;
+      }
+    });
 
-function formatTime(t) {
-  const m = Math.floor(t / 60);
-  const s = Math.floor(t % 60).toString().padStart(2, "0");
-  return `${m}:${s}`;
-}
-
-function togglePlay() {
-  if (player.paused) {
-    player.play();
-    playBtn.src = "https://cdn-icons-png.flaticon.com/512/1214/1214679.png";
-  } else {
-    player.pause();
-    playBtn.src = "https://cdn-icons-png.flaticon.com/512/2088/2088569.png";
+    $("recommendGrid").innerHTML = "";
+    json.recommendations?.results?.slice(0, 12).forEach(rec => {
+      if (rec.poster_path) {
+        $("recommendGrid").innerHTML += `
+          <div onclick="goTo('${rec.title}')">
+            <img src="https://image.tmdb.org/t/p/w185${rec.poster_path}" />
+            <div>${rec.title}</div>
+          </div>`;
+      }
+    });
+  } catch (e) {
+    $("titleText").innerText = "Not Found";
+    $("descText").innerText = "Unable to fetch movie data.";
   }
 }
-
-function toggleMute() {
-  player.muted = !player.muted;
-  volumeBtn.src = player.muted
-    ? "https://cdn-icons-png.flaticon.com/512/4546/4546899.png"
-    : "https://cdn-icons-png.flaticon.com/512/565/565296.png";
-}
-
-function toggleFullscreen() {
-  if (!document.fullscreenElement) {
-    player.requestFullscreen();
-    fullscreenBtn.src = "https://cdn-icons-png.flaticon.com/512/3502/3502504.png";
-  } else {
-    document.exitFullscreen();
-    fullscreenBtn.src = "https://cdn-icons-png.flaticon.com/512/3354/3354155.png";
-  }
-}
-
-function skip(sec) {
-  player.currentTime += sec;
-}
-
-player.addEventListener("timeupdate", () => {
-  const percent = (player.currentTime / player.duration) * 100;
-  progressBar.style.width = percent + "%";
-  knob.style.left = percent + "%";
-  currentTimeDisplay.innerText = formatTime(player.currentTime);
-});
-
-player.addEventListener("loadedmetadata", () => {
-  totalTimeDisplay.innerText = formatTime(player.duration);
-});
-
-container.addEventListener("click", e => {
-  const rect = container.getBoundingClientRect();
-  const percent = (e.clientX - rect.left) / rect.width;
-  player.currentTime = percent * player.duration;
-});
-
-container.addEventListener("mousemove", e => {
-  const rect = container.getBoundingClientRect();
-  const percent = (e.clientX - rect.left) / rect.width;
-  tooltip.innerText = formatTime(percent * player.duration);
-  tooltip.style.left = `${e.clientX - rect.left}px`;
-  tooltip.style.display = "block";
-});
-
-container.addEventListener("mouseleave", () => tooltip.style.display = "none");
-
-let dragging = false;
-knob.addEventListener("mousedown", () => dragging = true);
-document.addEventListener("mouseup", () => dragging = false);
-document.addEventListener("mousemove", e => {
-  if (!dragging) return;
-  const rect = container.getBoundingClientRect();
-  const percent = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-  player.currentTime = percent * player.duration;
-});
 
 function copyLink() {
   navigator.clipboard.writeText(location.href).then(() => alert("🔗 Link copied!"));
 }
+
+function goTo(t) {
+  const videoUrl = encodeURIComponent(url);
+  const safeTitle = encodeURIComponent(t);
+  location.href = `player.html?title=${safeTitle}&url=${videoUrl}`;
+}
+
+fetchMovieData();
 </script>
 
 </body>
