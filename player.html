@@ -28,7 +28,8 @@
     .video-wrapper {
   position: relative;
   background: black;
-  height: 22vh; /* 👈 was 30vh before */
+  height: 22vh;
+  z-index: 2;
     }
 
 
@@ -89,9 +90,13 @@
     .time-display { font-size: 13px; }
 
     .info {
+  position: relative;
+  z-index: 3;
   padding: 20px;
-  height: 78vh; /* 👈 adjusted to fill rest */
+  height: 78vh;
   overflow-y: auto;
+  background: rgba(17,17,17,0.95); /* ✅ slight solid background to prevent blend */
+  backdrop-filter: blur(2px); /* Optional: keeps theme smooth */
     }
 
     .info h2 { margin: 8px 0; }
