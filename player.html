@@ -5,62 +5,40 @@
   <title>Troop Player</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
-    body {
-      margin: 0;
-      background: #111;
-      font-family: sans-serif;
-      color: white;
-    }
-
+    body { margin: 0; background: #111; font-family: sans-serif; color: white; }
     .blur-bg {
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
+      top: 0; left: 0; width: 100%; height: 100%;
       background-size: cover;
       background-position: center;
       filter: blur(20px);
       opacity: 0.3;
       z-index: -1;
     }
-
     .top-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: rgba(0, 0, 0, 0.6);
-      padding: 10px 15px;
-      position: sticky;
-      top: 0;
-      z-index: 1000;
+      display: flex; justify-content: space-between; align-items: center;
+      background: rgba(0, 0, 0, 0.6); padding: 10px 15px;
+      position: sticky; top: 0; z-index: 1000;
     }
-
     .top-bar button {
-      background: rgba(255, 255, 255, 0.1);
-      color: white;
-      border: none;
-      padding: 6px 12px;
-      border-radius: 4px;
-      font-size: 14px;
+      background: rgba(255,255,255,0.1); color: white;
+      border: none; padding: 6px 12px;
+      border-radius: 4px; font-size: 14px;
       cursor: pointer;
     }
-
     .video-wrapper {
       position: relative;
       background: black;
-      height: 22vh;
+      height: 30vh;
       z-index: 2;
       overflow: hidden;
     }
-
     video {
       width: 100%;
       height: 100%;
       object-fit: contain;
       background: black;
     }
-
     .controls {
       background: rgba(0, 0, 0, 0.6);
       padding: 10px 12px;
@@ -68,127 +46,86 @@
       flex-direction: column;
       gap: 10px;
     }
-
     .progress-container {
-      position: relative;
-      height: 6px;
-      width: 100%;
-      background: #444;
-      border-radius: 3px;
+      position: relative; height: 6px;
+      background: #444; border-radius: 3px;
       cursor: pointer;
     }
-
     .progress-bar {
       height: 6px;
       background: #1e88e5;
       border-radius: 3px;
       width: 0%;
     }
-
     .progress-knob {
       position: absolute;
-      top: -5px;
-      width: 14px;
-      height: 14px;
-      background: #fff;
-      border-radius: 50%;
+      top: -5px; width: 14px; height: 14px;
+      background: #fff; border-radius: 50%;
       transform: translateX(-50%);
-      pointer-events: auto;
-      cursor: grab;
+      pointer-events: auto; cursor: grab;
     }
-
     .tooltip {
       position: absolute;
-      bottom: 100%;
-      transform: translateX(-50%);
-      font-size: 11px;
-      background: #000;
-      color: #fff;
-      padding: 2px 6px;
-      border-radius: 3px;
-      white-space: nowrap;
-      display: none;
+      bottom: 100%; transform: translateX(-50%);
+      font-size: 11px; background: #000; color: #fff;
+      padding: 2px 6px; border-radius: 3px;
+      white-space: nowrap; display: none;
     }
-
     .bar-row {
-      display: flex;
-      justify-content: space-between;
+      display: flex; justify-content: space-between;
       align-items: center;
     }
-
-    .bar-left,
-    .bar-right {
-      display: flex;
-      align-items: center;
-      gap: 10px;
+    .bar-left, .bar-right {
+      display: flex; align-items: center; gap: 10px;
     }
-
-    .bar-left img,
-    .bar-right img {
-      width: 20px;
-      height: 20px;
+    .bar-left img, .bar-right img {
+      width: 20px; height: 20px;
       filter: brightness(0) invert(1);
       cursor: pointer;
     }
-
-    .time-display {
-      font-size: 13px;
-    }
+    .time-display { font-size: 13px; }
 
     .info {
       position: relative;
       z-index: 3;
       padding: 20px;
-      height: 78vh;
+      height: 70vh;
       overflow-y: auto;
       background: rgba(17, 17, 17, 0.95);
       backdrop-filter: blur(2px);
     }
-
-    .info h2 {
-      margin: 8px 0;
-    }
-
-    .info .meta {
-      font-size: 13px;
-      color: #ccc;
-    }
-
-    .info p {
-      margin-top: 10px;
-      line-height: 1.5;
-    }
-
+    .info h2 { margin: 8px 0; }
+    .info .meta { font-size: 13px; color: #ccc; }
+    .info p { margin-top: 10px; line-height: 1.5; }
     .share-btn {
-      background: #1e88e5;
-      border: none;
-      color: white;
-      padding: 8px 14px;
-      border-radius: 5px;
-      font-size: 14px;
-      margin-top: 12px;
+      background: #1e88e5; border: none; color: white;
+      padding: 8px 14px; border-radius: 5px;
+      font-size: 14px; margin-top: 12px;
       cursor: pointer;
     }
-
-    #skipIntroBtn,
-    #skipOutroBtn {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      background: #1e88e5;
-      border: none;
-      color: white;
-      padding: 6px 12px;
-      font-size: 13px;
+    #castGrid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 20px;
+    }
+    #castGrid div {
+      width: 80px;
+      text-align: center;
+      font-size: 12px;
+    }
+    #castGrid img {
+      width: 100%;
       border-radius: 5px;
-      cursor: pointer;
-      display: none;
-      z-index: 999;
     }
-
-    #skipOutroBtn {
-      top: 60px;
+    #skipIntroBtn, #skipOutroBtn {
+      position: absolute; top: 20px; right: 20px;
+      background: #1e88e5; border: none; color: white;
+      padding: 6px 12px; font-size: 13px;
+      border-radius: 5px; cursor: pointer;
+      display: none; z-index: 999;
     }
+    #skipOutroBtn { top: 60px; }
   </style>
 </head>
 <body>
@@ -236,6 +173,7 @@
   <div class="meta" id="metaText">Year · Type</div>
   <p id="descText">Description not available.</p>
   <div><strong>Cast:</strong> <span id="castText">N/A</span></div>
+  <div id="castGrid"></div>
   <button class="share-btn" onclick="copyLink()">🔗 Share This</button>
 </div>
 
@@ -256,7 +194,7 @@ $("titleText").innerText = title;
 $("movieTitle").innerText = title;
 $("metaText").innerText = `${year} · ${type}`;
 $("descText").innerText = desc;
-$("castText").innerText = cast;
+$("castText").innerText = cast.includes("|") ? "" : cast;
 $("bgPoster").style.backgroundImage = `url('${poster}')`;
 player.poster = poster;
 
@@ -264,14 +202,27 @@ const playBtn = $("playBtn"), volumeBtn = $("volumeBtn"), fullscreenBtn = $("ful
 const progressBar = $("progressBar"), tooltip = $("tooltip"), knob = $("progressKnob"), container = $("progressContainer");
 const currentTimeDisplay = $("currentTime"), totalTimeDisplay = $("totalTime");
 const skipIntroBtn = $("skipIntroBtn"), skipOutroBtn = $("skipOutroBtn");
+const castGrid = $("castGrid");
+
+if (cast.includes("|")) {
+  castGrid.innerHTML = "";
+  cast.split(",").forEach(entry => {
+    const [name, img] = entry.split("|");
+    const div = document.createElement("div");
+    div.innerHTML = `
+      <img src="${img}" alt="${name}" />
+      <div>${name}</div>
+    `;
+    castGrid.appendChild(div);
+  });
+}
 
 let introEnd = null, outroStart = null;
 
 fetch('skip-times.json')
   .then(res => res.json())
   .then(data => {
-    const cleanTitle = title.toLowerCase();
-    const match = Object.keys(data).find(k => k.toLowerCase() === cleanTitle);
+    const match = Object.keys(data).find(k => k.toLowerCase() === title.toLowerCase());
     if (match) {
       introEnd = data[match].introEnd;
       outroStart = data[match].outroStart;
