@@ -5,285 +5,185 @@
   <title>Troop Player</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
-    body { margin: 0; background: #111; font-family: sans-serif; color: white; }
-    .blur-bg {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background-size: cover; background-position: center;
-      filter: blur(20px); opacity: 0.3; z-index: -1;
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: #000;
+      color: #fff;
+      font-family: sans-serif;
     }
-    .top-bar {
-      display: flex; justify-content: space-between; align-items: center;
-      background: rgba(0, 0, 0, 0.6); padding: 10px 15px;
-      position: sticky; top: 0; z-index: 1000;
-    }
-    .top-bar button {
-      background: rgba(255,255,255,0.1); color: white;
-      border: none; padding: 6px 12px; border-radius: 4px;
-      font-size: 14px; cursor: pointer;
-    }
-    .video-wrapper {
+    .player-container {
       position: relative;
-      background: black;
+      width: 100%;
+      height: 100vh;
+      background: #000;
     }
-    video { width: 100%; height: auto; }
-
-    .center-controls {
-      position: absolute;
-      top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      display: flex; gap: 25px;
-      align-items: center; justify-content: center;
-      opacity: 0; transition: opacity 0.3s ease;
-      z-index: 10;
+    video {
+      width: 100%;
+      height: 100%;
+      background: #000;
     }
-    .video-wrapper.show-controls .center-controls { opacity: 1; }
-
-    .center-controls img {
-      width: 36px; height: 36px;
-      filter: brightness(0) invert(1);
-      cursor: pointer;
-    }
-
     .controls {
-      background: rgba(0, 0, 0, 0.6);
-      padding: 10px 12px;
-      display: flex; flex-direction: column;
-      gap: 10px;
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(0,0,0,0.6);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px;
     }
-
-    .progress-container {
-      position: relative;
-      height: 6px; width: 100%;
-      background: #444; border-radius: 3px; cursor: pointer;
-    }
-    .progress-bar {
-      height: 6px; background: #1e88e5;
-      border-radius: 3px; width: 0%;
-    }
-    .progress-knob {
-      position: absolute; top: -5px;
-      width: 12px; height: 12px;
-      background: #fff; border-radius: 50%;
-      transform: translateX(-50%);
-      pointer-events: auto; cursor: grab;
-    }
-
-    .tooltip {
-      position: absolute; bottom: 100%; transform: translateX(-50%);
-      font-size: 11px; background: #000; color: #fff;
-      padding: 2px 6px; border-radius: 3px;
-      white-space: nowrap; display: none;
-    }
-
-    .bar-row {
-      display: flex; justify-content: space-between; align-items: center;
-    }
-
-    .bar-left, .bar-right {
-      display: flex; align-items: center; gap: 8px;
-    }
-    .bar-left img, .bar-right img {
-      width: 16px; height: 16px;
-      filter: brightness(0) invert(1);
+    .controls button, .controls select {
+      background: transparent;
+      border: none;
+      color: white;
+      font-size: 16px;
+      padding: 5px 10px;
+      margin: 2px;
       cursor: pointer;
     }
-
-    .time-display { font-size: 12px; }
-
-    .settings-dropdown {
-      position: absolute;
-      bottom: 45px; right: 45px;
-      background-color: #222; border-radius: 5px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.4);
-      display: none; z-index: 1000;
+    .progress-container {
+      width: 100%;
+      height: 6px;
+      background: #555;
+      cursor: pointer;
+      margin-top: 2px;
     }
-    .settings-dropdown a {
-      display: block; padding: 8px 14px;
-      color: white; text-decoration: none;
-      font-size: 14px;
+    .progress {
+      height: 100%;
+      background: #1e88e5;
+      width: 0%;
     }
-    .settings-dropdown a:hover { background: #444; }
-
-    .info {
-      padding: 15px;
+    .time {
+      font-size: 12px;
+      padding: 0 8px;
     }
-    .info h2 { margin: 8px 0; }
-    .info .meta { font-size: 13px; color: #ccc; }
-    .info p { margin-top: 10px; line-height: 1.4; }
-    .share-btn {
-      background: #1e88e5; border: none; color: white;
-      padding: 8px 14px; border-radius: 5px;
-      font-size: 14px; margin-top: 12px; cursor: pointer;
+    @media (max-width: 600px) {
+      .controls {
+        flex-direction: column;
+        gap: 8px;
+      }
+      .time {
+        order: -1;
+      }
     }
   </style>
 </head>
 <body>
 
-<div class="blur-bg" id="bgPoster"></div>
-
-<div class="top-bar">
-  <button onclick="history.back()">⬅ Back</button>
-  <div id="movieTitle">Now Playing</div>
-  <button onclick="location.href='index.html'">🏠 Home</button>
-</div>
-
-<div class="video-wrapper" id="videoWrapper" onclick="showControls()">
-  <video id="player" controlsList="nodownload">
-    <source id="videoSource" src="" type="video/mp4" />
-    <track id="subTrack" label="English" kind="subtitles" srclang="en" default>
+<div class="player-container">
+  <video id="video" controlslist="nodownload">
+    <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" type="video/mp4">
+    <track src="subtitles.vtt" kind="subtitles" srclang="en" label="English" />
   </video>
 
-  <div class="center-controls">
-    <img src="https://cdn-icons-png.flaticon.com/512/5296/5296749.png" onclick="skip(-10)" alt="Back 10s">
-    <img id="centerPlayBtn" src="https://cdn-icons-png.flaticon.com/512/2088/2088569.png" onclick="togglePlay()" alt="Play/Pause">
-    <img src="https://cdn-icons-png.flaticon.com/512/5293/5293447.png" onclick="skip(10)" alt="Forward 10s">
+  <div class="controls">
+    <div>
+      <button id="playpause">▶️</button>
+      <button id="rewind">⏪ 10s</button>
+      <button id="forward">10s ⏩</button>
+      <button id="mute">🔊</button>
+      <button id="fullscreen">⛶</button>
+      <button id="subtitles" style="display:none;">CC</button>
+    </div>
+    <div class="time">
+      <span id="current">00:00</span> / <span id="duration">00:00</span>
+    </div>
+    <select id="speed">
+      <option value="0.5">0.5x</option>
+      <option value="1" selected>1x</option>
+      <option value="1.5">1.5x</option>
+      <option value="2">2x</option>
+    </select>
   </div>
 
-  <div class="controls" id="controls">
-    <div class="progress-container" id="progressContainer">
-      <div class="progress-bar" id="progressBar"></div>
-      <div class="progress-knob" id="progressKnob"></div>
-      <div class="tooltip" id="tooltip"></div>
-    </div>
-
-    <div class="bar-row">
-      <div class="bar-left">
-        <img id="playBtn" src="https://cdn-icons-png.flaticon.com/512/2088/2088569.png" onclick="togglePlay()" alt="Play">
-        <img src="https://cdn-icons-png.flaticon.com/512/5296/5296749.png" onclick="skip(-10)" alt="Back 10s">
-        <img src="https://cdn-icons-png.flaticon.com/512/5293/5293447.png" onclick="skip(10)" alt="Forward 10s">
-        <img id="volumeBtn" src="https://cdn-icons-png.flaticon.com/512/565/565296.png" onclick="toggleMute()" alt="Volume">
-        <span class="time-display"><span id="currentTime">0:00</span> / <span id="totalTime">0:00</span></span>
-      </div>
-      <div class="bar-right">
-        <img id="settingsBtn" src="https://cdn-icons-png.flaticon.com/512/484/484613.png" onclick="toggleSettingsMenu()" alt="Settings">
-        <div class="settings-dropdown" id="settingsDropdown">
-          <a href="#" onclick="changeSpeed(0.5)">Speed: 0.5x</a>
-          <a href="#" onclick="changeSpeed(1)">Speed: 1x</a>
-          <a href="#" onclick="changeSpeed(1.5)">Speed: 1.5x</a>
-          <a href="#" onclick="changeSpeed(2)">Speed: 2x</a>
-          <a href="#" onclick="toggleSubtitles()">Subtitles: Toggle</a>
-        </div>
-        <img id="fullscreenBtn" src="https://cdn-icons-png.flaticon.com/512/3354/3354155.png" onclick="toggleFullscreen()" alt="Fullscreen">
-      </div>
-    </div>
+  <div class="progress-container" id="progress-container">
+    <div class="progress" id="progress-bar"></div>
   </div>
-</div>
-
-<div class="info">
-  <h2 id="titleText">Title</h2>
-  <div class="meta" id="metaText">Year · Type</div>
-  <p id="descText">Description not available.</p>
-  <div><strong>Cast:</strong> <span id="castText">N/A</span></div>
-  <button class="share-btn" onclick="copyLink()">🔗 Share This</button>
 </div>
 
 <script>
-const $ = id => document.getElementById(id);
-const p = new URLSearchParams(location.search);
-$("videoSource").src = decodeURIComponent(p.get("url") || "");
-$("subTrack").src = decodeURIComponent(p.get("sub") || "");
-$("titleText").textContent = $("movieTitle").textContent = decodeURIComponent(p.get("title") || "Now Playing");
-$("metaText").textContent = `${decodeURIComponent(p.get("year") || "")} · ${decodeURIComponent(p.get("type") || "")}`;
-$("descText").textContent = decodeURIComponent(p.get("desc") || "");
-$("castText").textContent = decodeURIComponent(p.get("cast") || "Unknown");
-$("bgPoster").style.backgroundImage = `url('${decodeURIComponent(p.get("poster") || "")}')`;
+  const video = document.getElementById('video');
+  const playPauseBtn = document.getElementById('playpause');
+  const muteBtn = document.getElementById('mute');
+  const fullscreenBtn = document.getElementById('fullscreen');
+  const speedSelect = document.getElementById('speed');
+  const subtitleBtn = document.getElementById('subtitles');
+  const rewindBtn = document.getElementById('rewind');
+  const forwardBtn = document.getElementById('forward');
+  const progressBar = document.getElementById('progress-bar');
+  const progressContainer = document.getElementById('progress-container');
+  const currentTimeEl = document.getElementById('current');
+  const durationEl = document.getElementById('duration');
 
-const player = $("player");
-const subtitleTrack = $("subTrack");
-let subtitleEnabled = true;
+  const STORAGE_KEY = "troop-video-position";
 
-function toggleSubtitles() {
-  subtitleEnabled = !subtitleEnabled;
-  subtitleTrack.mode = subtitleEnabled ? "showing" : "disabled";
-}
+  const format = (t) => {
+    const m = Math.floor(t / 60).toString().padStart(2, '0');
+    const s = Math.floor(t % 60).toString().padStart(2, '0');
+    return `${m}:${s}`;
+  };
 
-function togglePlay() {
-  if (player.paused) {
-    player.play();
-    $("playBtn").src = $("centerPlayBtn").src = "https://cdn-icons-png.flaticon.com/512/1214/1214679.png";
-  } else {
-    player.pause();
-    $("playBtn").src = $("centerPlayBtn").src = "https://cdn-icons-png.flaticon.com/512/2088/2088569.png";
-  }
-}
-function skip(sec) { player.currentTime += sec; }
-function toggleMute() {
-  player.muted = !player.muted;
-  $("volumeBtn").src = player.muted
-    ? "https://cdn-icons-png.flaticon.com/512/4546/4546899.png"
-    : "https://cdn-icons-png.flaticon.com/512/565/565296.png";
-}
-function toggleFullscreen() {
-  if (!document.fullscreenElement) {
-    player.requestFullscreen();
-    $("fullscreenBtn").src = "https://cdn-icons-png.flaticon.com/512/3502/3502504.png";
-  } else {
-    document.exitFullscreen();
-    $("fullscreenBtn").src = "https://cdn-icons-png.flaticon.com/512/3354/3354155.png";
-  }
-}
-function changeSpeed(rate) {
-  player.playbackRate = parseFloat(rate);
-  toggleSettingsMenu();
-}
-function toggleSettingsMenu() {
-  const menu = $("settingsDropdown");
-  menu.style.display = menu.style.display === "block" ? "none" : "block";
-}
-function formatTime(t) {
-  const m = Math.floor(t / 60);
-  const s = Math.floor(t % 60).toString().padStart(2, "0");
-  return `${m}:${s}`;
-}
-function updateUI() {
-  const percent = (player.currentTime / player.duration) * 100;
-  $("progressBar").style.width = percent + "%";
-  $("progressKnob").style.left = percent + "%";
-  $("currentTime").innerText = formatTime(player.currentTime);
-  localStorage.setItem("player_" + btoa(p.get("url") || ""), player.currentTime);
-}
-player.addEventListener("timeupdate", updateUI);
-player.addEventListener("loadedmetadata", () => {
-  $("totalTime").innerText = formatTime(player.duration);
-  const saved = parseFloat(localStorage.getItem("player_" + btoa(p.get("url") || "")));
-  if (saved) player.currentTime = saved;
-});
-$("progressContainer").addEventListener("click", e => {
-  const rect = e.target.getBoundingClientRect();
-  const percent = (e.clientX - rect.left) / rect.width;
-  player.currentTime = percent * player.duration;
-});
-$("progressContainer").addEventListener("mousemove", e => {
-  const rect = e.target.getBoundingClientRect();
-  const percent = (e.clientX - rect.left) / rect.width;
-  $("tooltip").innerText = formatTime(percent * player.duration);
-  $("tooltip").style.left = `${e.clientX - rect.left}px`;
-  $("tooltip").style.display = "block";
-});
-$("progressContainer").addEventListener("mouseleave", () => {
-  $("tooltip").style.display = "none";
-});
-let dragging = false;
-$("progressKnob").addEventListener("mousedown", () => dragging = true);
-document.addEventListener("mouseup", () => dragging = false);
-document.addEventListener("mousemove", e => {
-  if (!dragging) return;
-  const rect = $("progressContainer").getBoundingClientRect();
-  const percent = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-  player.currentTime = percent * player.duration;
-});
-function copyLink() {
-  navigator.clipboard.writeText(location.href).then(() => alert("🔗 Link copied!"));
-}
-let controlTimeout;
-function showControls() {
-  const wrapper = $("videoWrapper");
-  wrapper.classList.add("show-controls");
-  wrapper.classList.remove("hide-ui");
-  clearTimeout(controlTimeout);
-  controlTimeout = setTimeout(() => wrapper.classList.add("hide-ui"), 3000);
-}
-showControls();
+  video.addEventListener("loadedmetadata", () => {
+    const savedTime = localStorage.getItem(STORAGE_KEY);
+    if (savedTime) video.currentTime = parseFloat(savedTime);
+    durationEl.textContent = format(video.duration);
+
+    const track = video.textTracks[0];
+    if (track) {
+      track.mode = "showing";
+      subtitleBtn.style.display = "inline-block";
+      subtitleBtn.style.opacity = 1;
+    }
+  });
+
+  video.addEventListener("timeupdate", () => {
+    currentTimeEl.textContent = format(video.currentTime);
+    progressBar.style.width = `${(video.currentTime / video.duration) * 100}%`;
+    localStorage.setItem(STORAGE_KEY, video.currentTime);
+  });
+
+  playPauseBtn.onclick = () => {
+    if (video.paused) {
+      video.play(); playPauseBtn.textContent = '⏸️';
+    } else {
+      video.pause(); playPauseBtn.textContent = '▶️';
+    }
+  };
+
+  muteBtn.onclick = () => {
+    video.muted = !video.muted;
+    muteBtn.textContent = video.muted ? '🔇' : '🔊';
+  };
+
+  fullscreenBtn.onclick = () => {
+    if (document.fullscreenElement) document.exitFullscreen();
+    else video.requestFullscreen();
+  };
+
+  speedSelect.onchange = () => {
+    video.playbackRate = parseFloat(speedSelect.value);
+  };
+
+  subtitleBtn.onclick = () => {
+    const track = video.textTracks[0];
+    if (track) {
+      const showing = track.mode === "showing";
+      track.mode = showing ? "disabled" : "showing";
+      subtitleBtn.style.opacity = showing ? "0.5" : "1";
+    }
+  };
+
+  rewindBtn.onclick = () => video.currentTime -= 10;
+  forwardBtn.onclick = () => video.currentTime += 10;
+
+  progressContainer.onclick = (e) => {
+    const percent = e.offsetX / progressContainer.offsetWidth;
+    video.currentTime = percent * video.duration;
+  };
 </script>
+
 </body>
 </html>
