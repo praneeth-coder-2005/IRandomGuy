@@ -363,10 +363,104 @@
       overflow: hidden;
       transition: max-height 0.3s ease;
     }
+    /* Mobile Responsive Styles */
     @media (max-width: 768px) {
       .top-bar {
         padding: 8px 10px;
+        font-size: 14px;
       }
+      .top-bar button {
+        padding: 8px 12px;
+        font-size: 13px;
+      }
+      
+      .video-wrapper {
+        margin: 0 10px 20px;
+        border-radius: 4px;
+      }
+      
+      /* Mobile Video Controls */
+      .video-controls {
+        padding: 15px 12px 12px;
+      }
+      
+      .progress-container {
+        height: 6px;
+        margin-bottom: 12px;
+      }
+      
+      .progress-handle {
+        width: 16px;
+        height: 16px;
+        right: -8px;
+        opacity: 1;
+      }
+      
+      .controls-row {
+        gap: 8px;
+      }
+      
+      .controls-left,
+      .controls-right {
+        gap: 8px;
+      }
+      
+      .control-btn {
+        width: 42px;
+        height: 42px;
+        font-size: 18px;
+        border-radius: 6px;
+      }
+      
+      .control-btn.large {
+        width: 48px;
+        height: 48px;
+        font-size: 22px;
+      }
+      
+      .time-display {
+        font-size: 12px;
+        min-width: 70px;
+      }
+      
+      .volume-container {
+        display: none; /* Hide volume on mobile, use device volume */
+      }
+      
+      .center-play-btn {
+        width: 90px;
+        height: 90px;
+        border-width: 4px;
+      }
+      
+      .center-play-btn svg {
+        width: 36px;
+        height: 36px;
+      }
+      
+      .settings-menu {
+        bottom: 75px;
+        right: 10px;
+        min-width: 140px;
+      }
+      
+      .settings-item {
+        padding: 12px 15px;
+        font-size: 15px;
+      }
+      
+      .loading-spinner .spinner {
+        width: 50px;
+        height: 50px;
+        border-width: 4px;
+      }
+      
+      .error-message {
+        padding: 15px 20px;
+        font-size: 14px;
+        max-width: 280px;
+      }
+      
       .info {
         padding: 15px;
       }
@@ -376,6 +470,131 @@
       }
       .trailer iframe {
         height: 200px;
+      }
+    }
+    
+    /* Small Mobile Devices */
+    @media (max-width: 480px) {
+      .video-wrapper {
+        margin: 0 5px 15px;
+      }
+      
+      .video-controls {
+        padding: 12px 8px 10px;
+      }
+      
+      .controls-row {
+        gap: 6px;
+      }
+      
+      .controls-left,
+      .controls-right {
+        gap: 6px;
+      }
+      
+      .control-btn {
+        width: 38px;
+        height: 38px;
+        font-size: 16px;
+      }
+      
+      .control-btn.large {
+        width: 44px;
+        height: 44px;
+        font-size: 20px;
+      }
+      
+      .time-display {
+        font-size: 11px;
+        min-width: 65px;
+      }
+      
+      .center-play-btn {
+        width: 80px;
+        height: 80px;
+      }
+      
+      .center-play-btn svg {
+        width: 32px;
+        height: 32px;
+      }
+      
+      .top-bar {
+        flex-wrap: wrap;
+        gap: 5px;
+      }
+      
+      .top-bar button {
+        padding: 6px 10px;
+        font-size: 12px;
+      }
+      
+      #genreChips {
+        order: 3;
+        flex-basis: 100%;
+        margin-top: 8px;
+      }
+      
+      .settings-menu {
+        right: 5px;
+        min-width: 130px;
+      }
+      
+      .info {
+        padding: 12px;
+      }
+    }
+    
+    /* Landscape Mobile */
+    @media (max-width: 768px) and (orientation: landscape) {
+      .video-wrapper {
+        max-width: 100%;
+        margin: 0;
+        border-radius: 0;
+      }
+      
+      .video-controls {
+        padding: 8px 15px 8px;
+      }
+      
+      .progress-container {
+        margin-bottom: 8px;
+      }
+      
+      .control-btn {
+        width: 36px;
+        height: 36px;
+        font-size: 16px;
+      }
+      
+      .control-btn.large {
+        width: 40px;
+        height: 40px;
+        font-size: 18px;
+      }
+    }
+    
+    /* Touch Device Optimizations */
+    @media (hover: none) and (pointer: coarse) {
+      .video-controls {
+        opacity: 1;
+      }
+      
+      .video-wrapper:hover .video-controls,
+      .video-wrapper.show-controls .video-controls {
+        opacity: 1;
+      }
+      
+      .control-btn:hover {
+        background: rgba(255,255,255,0.3);
+      }
+      
+      .progress-handle {
+        opacity: 1;
+      }
+      
+      .volume-container {
+        display: none !important;
       }
     }
   </style>
@@ -514,12 +733,26 @@
   </div>
 
   <div style="margin-top:15px;">
-    <small>
-      <strong>Keyboard Controls:</strong><br>
-      <kbd>Space</kbd> - Play/Pause • <kbd>F</kbd> - Fullscreen • <kbd>M</kbd> - Mute<br>
-      <kbd>←</kbd>/<kbd>→</kbd> - Seek ±10s • <kbd>↑</kbd>/<kbd>↓</kbd> - Volume ±10%
+    <small id="controlsInfo">
+      <strong>Controls:</strong><br>
+      <span class="desktop-controls">
+        <kbd>Space</kbd> - Play/Pause • <kbd>F</kbd> - Fullscreen • <kbd>M</kbd> - Mute<br>
+        <kbd>←</kbd>/<kbd>→</kbd> - Seek ±10s • <kbd>↑</kbd>/<kbd>↓</kbd> - Volume ±10%
+      </span>
+      <span class="mobile-controls" style="display:none;">
+        <strong>Touch:</strong> Tap to show controls • Double-tap left/right to seek ±10s<br>
+        <strong>Gestures:</strong> Pinch to zoom • Use device volume buttons for audio
+      </span>
     </small>
   </div>
+  
+  <script>
+    // Update controls info for mobile
+    if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+      document.querySelector('.desktop-controls').style.display = 'none';
+      document.querySelector('.mobile-controls').style.display = 'block';
+    }
+  </script>
 
   <button class="share-btn" onclick="copyLink()">🔗 Share This</button>
 </div>
@@ -557,6 +790,10 @@ const subTrack = $("subtitleTrack");
 let controlsTimeout;
 let isDragging = false;
 let isVolumeSupported = true;
+let isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+let lastTouchTime = 0;
+let touchStartX = 0;
+let touchStartY = 0;
 
 // Load the video after setting the source
 if (url) {
@@ -672,17 +909,68 @@ function updateVolumeIcon(volume, muted) {
 function showControls() {
   videoWrapper.classList.add("show-controls");
   clearTimeout(controlsTimeout);
+  const timeout = isMobile ? 5000 : 3000; // Longer timeout on mobile
   controlsTimeout = setTimeout(() => {
     if (!player.paused && !isDragging) {
       videoWrapper.classList.remove("show-controls");
     }
-  }, 3000);
+  }, timeout);
 }
 
 function hideControls() {
-  if (!player.paused && !isDragging) {
+  if (!player.paused && !isDragging && !isMobile) {
     videoWrapper.classList.remove("show-controls");
   }
+}
+
+// Mobile-specific functions
+function handleDoubleTap(e) {
+  const currentTime = Date.now();
+  const timeDiff = currentTime - lastTouchTime;
+  
+  if (timeDiff < 300 && timeDiff > 0) {
+    // Double tap detected
+    const rect = videoWrapper.getBoundingClientRect();
+    const tapX = e.touches ? e.touches[0].clientX : e.clientX;
+    const centerX = rect.left + rect.width / 2;
+    
+    if (tapX < centerX) {
+      // Left side - seek backward
+      player.currentTime = Math.max(0, player.currentTime - 10);
+      showSeekFeedback(-10);
+    } else {
+      // Right side - seek forward
+      player.currentTime = Math.min(player.duration || 0, player.currentTime + 10);
+      showSeekFeedback(10);
+    }
+    e.preventDefault();
+  }
+  lastTouchTime = currentTime;
+}
+
+function showSeekFeedback(seconds) {
+  const feedback = document.createElement('div');
+  feedback.style.cssText = `
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0,0,0,0.8);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-size: 14px;
+    z-index: 200;
+    pointer-events: none;
+  `;
+  feedback.textContent = seconds > 0 ? `+${seconds}s` : `${seconds}s`;
+  videoWrapper.appendChild(feedback);
+  
+  setTimeout(() => {
+    if (feedback.parentNode) {
+      feedback.parentNode.removeChild(feedback);
+    }
+  }, 800);
 }
 
 // Video event handlers
@@ -762,52 +1050,75 @@ player.addEventListener("ended", () => {
 centerPlayBtn.addEventListener("click", togglePlay);
 playPauseBtn.addEventListener("click", togglePlay);
 
-// Progress bar controls
-progressContainer.addEventListener("click", (e) => {
+// Progress bar controls (Mouse and Touch)
+function handleProgressClick(e) {
   const rect = progressContainer.getBoundingClientRect();
-  const percent = (e.clientX - rect.left) / rect.width;
+  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+  const percent = (clientX - rect.left) / rect.width;
   if (player.duration) {
     player.currentTime = percent * player.duration;
   }
+}
+
+progressContainer.addEventListener("click", handleProgressClick);
+progressContainer.addEventListener("touchstart", (e) => {
+  e.preventDefault();
+  handleProgressClick(e);
 });
 
-// Progress bar dragging
-progressContainer.addEventListener("mousedown", (e) => {
-  isDragging = true;
-  showControls();
-  const updateProgress = (e) => {
-    const rect = progressContainer.getBoundingClientRect();
-    const percent = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-    if (player.duration) {
-      player.currentTime = percent * player.duration;
-      progressBar.style.width = (percent * 100) + "%";
-      timeDisplay.textContent = `${formatTime(player.currentTime)} / ${formatTime(player.duration)}`;
-    }
+// Progress bar dragging (Mouse and Touch)
+function addProgressDragEvents() {
+  const startDrag = (e) => {
+    e.preventDefault();
+    isDragging = true;
+    showControls();
+    
+    const updateProgress = (e) => {
+      const rect = progressContainer.getBoundingClientRect();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const percent = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+      if (player.duration) {
+        player.currentTime = percent * player.duration;
+        progressBar.style.width = (percent * 100) + "%";
+        timeDisplay.textContent = `${formatTime(player.currentTime)} / ${formatTime(player.duration)}`;
+      }
+    };
+    
+    const stopDragging = () => {
+      isDragging = false;
+      document.removeEventListener("mousemove", updateProgress);
+      document.removeEventListener("mouseup", stopDragging);
+      document.removeEventListener("touchmove", updateProgress);
+      document.removeEventListener("touchend", stopDragging);
+      hideControls();
+    };
+    
+    document.addEventListener("mousemove", updateProgress);
+    document.addEventListener("mouseup", stopDragging);
+    document.addEventListener("touchmove", updateProgress, { passive: false });
+    document.addEventListener("touchend", stopDragging);
+    updateProgress(e);
   };
   
-  const stopDragging = () => {
-    isDragging = false;
-    document.removeEventListener("mousemove", updateProgress);
-    document.removeEventListener("mouseup", stopDragging);
-    hideControls();
-  };
-  
-  document.addEventListener("mousemove", updateProgress);
-  document.addEventListener("mouseup", stopDragging);
-  updateProgress(e);
-});
+  progressContainer.addEventListener("mousedown", startDrag);
+  progressContainer.addEventListener("touchstart", startDrag, { passive: false });
+}
 
-// Volume controls
-volumeBtn.addEventListener("click", () => {
-  player.muted = !player.muted;
-});
+addProgressDragEvents();
 
-volumeSlider.addEventListener("click", (e) => {
-  const rect = volumeSlider.getBoundingClientRect();
-  const percent = (e.clientX - rect.left) / rect.width;
-  player.volume = Math.max(0, Math.min(1, percent));
-  player.muted = false;
-});
+// Volume controls (hidden on mobile)
+if (!isMobile) {
+  volumeBtn.addEventListener("click", () => {
+    player.muted = !player.muted;
+  });
+
+  volumeSlider.addEventListener("click", (e) => {
+    const rect = volumeSlider.getBoundingClientRect();
+    const percent = (e.clientX - rect.left) / rect.width;
+    player.volume = Math.max(0, Math.min(1, percent));
+    player.muted = false;
+  });
+}
 
 // Settings menu
 settingsBtn.addEventListener("click", (e) => {
@@ -818,17 +1129,60 @@ settingsBtn.addEventListener("click", (e) => {
 // Fullscreen controls
 fullscreenBtn.addEventListener("click", toggleFullscreen);
 
-// Video wrapper mouse events
-videoWrapper.addEventListener("mouseenter", showControls);
-videoWrapper.addEventListener("mouseleave", hideControls);
-videoWrapper.addEventListener("mousemove", showControls);
+// Video wrapper mouse events (desktop)
+if (!isMobile) {
+  videoWrapper.addEventListener("mouseenter", showControls);
+  videoWrapper.addEventListener("mouseleave", hideControls);
+  videoWrapper.addEventListener("mousemove", showControls);
+}
 
-// Click to play/pause
-videoWrapper.addEventListener("click", (e) => {
-  if (e.target === player || e.target === centerPlayBtn) {
-    togglePlay();
-  }
-});
+// Mobile touch events
+if (isMobile) {
+  videoWrapper.addEventListener("touchstart", (e) => {
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+    showControls();
+  });
+  
+  videoWrapper.addEventListener("touchend", (e) => {
+    const touchEndX = e.changedTouches[0].clientX;
+    const touchEndY = e.changedTouches[0].clientY;
+    const deltaX = Math.abs(touchEndX - touchStartX);
+    const deltaY = Math.abs(touchEndY - touchStartY);
+    
+    // Only trigger if it's a tap (not a swipe)
+    if (deltaX < 10 && deltaY < 10) {
+      // Check if it's a control element
+      if (e.target.closest('.video-controls') || 
+          e.target === centerPlayBtn || 
+          e.target.closest('.center-play-btn')) {
+        return; // Let control handlers manage it
+      }
+      
+      // Handle double-tap for seeking
+      handleDoubleTap(e);
+      
+      // Single tap to show/hide controls or play/pause
+      setTimeout(() => {
+        if (Date.now() - lastTouchTime > 300) {
+          // Single tap - toggle controls or play/pause
+          if (videoWrapper.classList.contains('show-controls')) {
+            togglePlay();
+          } else {
+            showControls();
+          }
+        }
+      }, 300);
+    }
+  });
+} else {
+  // Desktop click to play/pause
+  videoWrapper.addEventListener("click", (e) => {
+    if (e.target === player || e.target === centerPlayBtn) {
+      togglePlay();
+    }
+  });
+}
 
 // Close settings menu when clicking outside
 document.addEventListener("click", () => {
@@ -882,12 +1236,27 @@ function togglePlay() {
 
 function toggleFullscreen() {
   if (!document.fullscreenElement) {
-    if (videoWrapper.requestFullscreen) {
-      videoWrapper.requestFullscreen();
-    } else if (videoWrapper.webkitRequestFullscreen) {
-      videoWrapper.webkitRequestFullscreen();
-    } else if (videoWrapper.msRequestFullscreen) {
-      videoWrapper.msRequestFullscreen();
+    // Mobile-specific fullscreen handling
+    if (isMobile) {
+      // Try to use native fullscreen for video element on mobile
+      if (player.requestFullscreen) {
+        player.requestFullscreen();
+      } else if (player.webkitRequestFullscreen) {
+        player.webkitRequestFullscreen();
+      } else if (player.webkitEnterFullscreen) {
+        player.webkitEnterFullscreen(); // iOS Safari
+      } else if (videoWrapper.requestFullscreen) {
+        videoWrapper.requestFullscreen();
+      }
+    } else {
+      // Desktop fullscreen
+      if (videoWrapper.requestFullscreen) {
+        videoWrapper.requestFullscreen();
+      } else if (videoWrapper.webkitRequestFullscreen) {
+        videoWrapper.webkitRequestFullscreen();
+      } else if (videoWrapper.msRequestFullscreen) {
+        videoWrapper.msRequestFullscreen();
+      }
     }
   } else {
     if (document.exitFullscreen) {
@@ -919,8 +1288,51 @@ document.addEventListener("fullscreenchange", () => {
   }
 });
 
+// Mobile-specific initialization
+if (isMobile) {
+  // Set initial controls visibility for mobile
+  videoWrapper.classList.add("show-controls");
+  
+  // Prevent zoom on double tap for video controls
+  document.addEventListener('touchstart', function(e) {
+    if (e.touches.length > 1) {
+      e.preventDefault();
+    }
+  }, { passive: false });
+  
+  // Prevent default touch behaviors that might interfere
+  videoWrapper.addEventListener('touchstart', function(e) {
+    e.stopPropagation();
+  }, { passive: true });
+  
+  // Add mobile-specific CSS class
+  document.body.classList.add('mobile-device');
+}
+
 // Initialize controls visibility
 showControls();
+
+// Add mobile CSS class to body for additional styling
+if (isMobile) {
+  const style = document.createElement('style');
+  style.textContent = `
+    body.mobile-device {
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    
+    body.mobile-device .video-wrapper {
+      -webkit-overflow-scrolling: touch;
+    }
+    
+    body.mobile-device .video-controls {
+      -webkit-backdrop-filter: blur(10px);
+      backdrop-filter: blur(10px);
+    }
+  `;
+  document.head.appendChild(style);
+}
 </script>
 </body>
 </html>
