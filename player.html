@@ -22,93 +22,92 @@
       font-size: 14px; cursor: pointer;
     }
     .video-wrapper {
-      position: relative; background: black; margin-bottom: 20px;
+      position: relative; background: black;
+      max-width: 900px; margin: auto; margin-bottom: 20px;
     }
-    video { width: 100%; height: auto; }
-
+    video { width: 100%; height: auto; background: black; }
     .controls {
       background: rgba(0, 0, 0, 0.6);
       padding: 10px 12px;
       display: flex;
       flex-direction: column;
       gap: 10px;
+      transition: opacity 0.3s;
     }
-
+    .hide-controls .controls {
+      opacity: 0;
+      pointer-events: none;
+    }
     .progress-container {
       position: relative;
-      height: 6px; width: 100%;
-      background: #444; border-radius: 3px; cursor: pointer;
+      height: 6px; background: #444; border-radius: 3px; cursor: pointer;
     }
-
     .progress-bar {
       height: 6px; background: #1e88e5;
       border-radius: 3px; width: 0%;
     }
-
     .progress-knob {
-      position: absolute;
-      top: -5px; width: 14px; height: 14px;
-      background: #fff; border-radius: 50%;
-      transform: translateX(-50%);
-      pointer-events: auto; cursor: grab;
+      position: absolute; top: -5px;
+      width: 14px; height: 14px; background: #fff;
+      border-radius: 50%; transform: translateX(-50%);
+      cursor: grab;
     }
-
     .tooltip {
       position: absolute; bottom: 100%; transform: translateX(-50%);
       font-size: 11px; background: #000; color: #fff;
       padding: 2px 6px; border-radius: 3px; white-space: nowrap;
       display: none;
     }
-
     .bar-row {
       display: flex; justify-content: space-between; align-items: center;
     }
-
     .bar-left, .bar-right {
       display: flex; align-items: center; gap: 10px;
     }
-
     .bar-left img, .bar-right img {
       width: 20px; height: 20px;
-      filter: brightness(0) invert(1);
-      cursor: pointer;
+      filter: brightness(0) invert(1); cursor: pointer;
+      transition: transform 0.2s ease;
     }
-
-    .time-display {
-      font-size: 13px;
+    .bar-left img:hover, .bar-right img:hover {
+      transform: scale(1.2);
     }
+    .time-display { font-size: 13px; }
 
     .info {
+      max-width: 900px; margin: auto;
       padding: 20px;
     }
-
     .info h2 { margin: 8px 0; }
     .info .meta { font-size: 13px; color: #ccc; }
+    .info .stars { color: gold; font-size: 14px; margin-bottom: 10px; }
     .info p { margin-top: 10px; line-height: 1.4; }
-
+    .desc-toggle {
+      color: #1e88e5; font-size: 13px;
+      cursor: pointer; display: inline-block; margin-top: 5px;
+    }
     .cast-grid {
-      margin-top: 15px;
-      display: flex;
-      gap: 12px;
-      overflow-x: auto;
+      margin-top: 15px; display: flex;
+      gap: 12px; overflow-x: auto;
     }
-
     .cast-grid div {
-      flex: 0 0 auto;
-      width: 80px;
-      font-size: 12px;
-      text-align: center;
+      flex: 0 0 auto; width: 80px;
+      font-size: 12px; text-align: center;
+      cursor: pointer;
     }
-
     .cast-grid img {
-      width: 100%;
-      border-radius: 6px;
+      width: 100%; border-radius: 6px;
     }
-
+    .trailer iframe {
+      width: 100%; height: 300px;
+      border: none; border-radius: 8px;
+      margin-top: 20px;
+    }
     .share-btn {
-      background: #1e88e5; border: none; color: white;
+      background: #1e88e5;
+      border: none; color: white;
       padding: 8px 14px; border-radius: 5px;
-      font-size: 14px; margin-top: 12px; cursor: pointer;
+      font-size: 14px; margin-top: 14px; cursor: pointer;
     }
   </style>
 </head>
@@ -122,12 +121,12 @@
   <button onclick="location.href='index.html'">🏠 Home</button>
 </div>
 
-<div class="video-wrapper">
+<div class="video-wrapper" id="videoWrapper">
   <video id="player" poster="" preload="metadata">
     <source id="videoSource" src="" type="video/mp4" />
   </video>
 
-  <div class="controls">
+  <div class="controls" id="controls">
     <div class="progress-container" id="progressContainer">
       <div class="progress-bar" id="progressBar"></div>
       <div class="progress-knob" id="progressKnob"></div>
@@ -151,74 +150,90 @@
 
 <div class="info">
   <h2 id="titleText">Loading...</h2>
-  <div class="meta" id="metaText">Year · Type</div>
-  <p id="descText">Loading description...</p>
-
+  <div class="meta" id="metaText"></div>
+  <div class="stars" id="ratingStars">⭐️⭐️⭐️⭐️☆</div>
+  <p id="descText"></p>
+  <span class="desc-toggle" onclick="toggleDesc()">Show more</span>
   <h3 style="margin-top: 20px;">Cast</h3>
   <div class="cast-grid" id="castGrid">Loading...</div>
-
+  <div class="trailer" id="trailerWrapper"></div>
   <button class="share-btn" onclick="copyLink()">🔗 Share This</button>
 </div>
 
 <script>
 const TMDB_API_KEY = "bb5f40c5be4b24660cbdc20c2409835e";
 const $ = id => document.getElementById(id);
-const player = $("player");
 const p = new URLSearchParams(location.search);
 const url = decodeURIComponent(p.get("url") || "");
-const title = decodeURIComponent(p.get("title") || "Unknown Title");
+const title = decodeURIComponent(p.get("title") || "Unknown");
 
 $("videoSource").src = url;
 $("movieTitle").innerText = title;
-$("player").poster = "";
-const storageKey = "player_" + btoa(url);
-player.currentTime = parseFloat(localStorage.getItem(storageKey)) || 0;
 
-// TMDb fetch
-async function loadTMDbData() {
+let descExpanded = false;
+
+function toggleDesc() {
+  const desc = $("descText");
+  if (descExpanded) {
+    desc.style.maxHeight = "80px";
+    event.target.innerText = "Show more";
+  } else {
+    desc.style.maxHeight = "none";
+    event.target.innerText = "Show less";
+  }
+  descExpanded = !descExpanded;
+}
+
+async function loadMovieInfo() {
   try {
     const res = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(title)}`);
-    const search = await res.json();
-    const movie = search.results?.[0];
-    if (!movie) throw new Error("Not found");
+    const movie = (await res.json()).results[0];
+    if (!movie) return;
 
-    const detailRes = await fetch(`https://api.themoviedb.org/3/movie/${movie.id}?api_key=${TMDB_API_KEY}&append_to_response=credits`);
+    const detailRes = await fetch(`https://api.themoviedb.org/3/movie/${movie.id}?api_key=${TMDB_API_KEY}&append_to_response=videos,credits`);
     const data = await detailRes.json();
 
     $("titleText").innerText = data.title;
-    $("metaText").innerText = `${(data.release_date || "").slice(0, 4)} · ${data.genres?.[0]?.name || ''}`;
-    $("descText").innerText = data.overview || "No description available.";
+    $("metaText").innerText = `${(data.release_date || '').slice(0, 4)} · ${data.genres?.[0]?.name || ''}`;
+    $("descText").innerText = data.overview || "No description.";
     $("bgPoster").style.backgroundImage = `url(https://image.tmdb.org/t/p/w500${data.backdrop_path || data.poster_path})`;
     $("player").poster = `https://image.tmdb.org/t/p/w500${data.poster_path}`;
 
+    const rating = (data.vote_average / 2).toFixed(1);
+    $("ratingStars").innerText = "⭐️".repeat(Math.round(rating)) + "☆".repeat(5 - Math.round(rating));
+
     $("castGrid").innerHTML = "";
-    data.credits.cast.slice(0, 15).forEach(actor => {
+    data.credits.cast.slice(0, 12).forEach(actor => {
       if (actor.profile_path) {
         $("castGrid").innerHTML += `
-          <div>
+          <div onclick="window.open('https://www.themoviedb.org/search?query=${encodeURIComponent(actor.name)}')">
             <img src="https://image.tmdb.org/t/p/w185${actor.profile_path}" />
             <div>${actor.name}</div>
           </div>`;
       }
     });
-  } catch (e) {
-    $("descText").innerText = "Could not load movie info.";
-    $("castGrid").innerText = "No cast available.";
+
+    const trailer = data.videos.results.find(v => v.site === "YouTube" && v.type === "Trailer");
+    if (trailer) {
+      $("trailerWrapper").innerHTML = `<iframe src="https://www.youtube.com/embed/${trailer.key}" allowfullscreen></iframe>`;
+    }
+  } catch {
+    $("descText").innerText = "Failed to load movie data.";
   }
 }
+loadMovieInfo();
 
-loadTMDbData();
-
-const playBtn = $("playBtn"), volumeBtn = $("volumeBtn"), fullscreenBtn = $("fullscreenBtn");
+// Player controls
+const player = $("player"), playBtn = $("playBtn"), volumeBtn = $("volumeBtn"), fullscreenBtn = $("fullscreenBtn");
 const progressBar = $("progressBar"), tooltip = $("tooltip"), knob = $("progressKnob"), container = $("progressContainer");
 const currentTimeDisplay = $("currentTime"), totalTimeDisplay = $("totalTime");
+const storageKey = "player_" + btoa(url);
+player.currentTime = parseFloat(localStorage.getItem(storageKey)) || 0;
 
 function formatTime(t) {
-  const m = Math.floor(t / 60);
-  const s = Math.floor(t % 60).toString().padStart(2, "0");
+  const m = Math.floor(t / 60), s = Math.floor(t % 60).toString().padStart(2, "0");
   return `${m}:${s}`;
 }
-
 function togglePlay() {
   if (player.paused) {
     player.play();
@@ -228,14 +243,12 @@ function togglePlay() {
     playBtn.src = "https://cdn-icons-png.flaticon.com/512/2088/2088569.png";
   }
 }
-
 function toggleMute() {
   player.muted = !player.muted;
   volumeBtn.src = player.muted
     ? "https://cdn-icons-png.flaticon.com/512/4546/4546899.png"
     : "https://cdn-icons-png.flaticon.com/512/565/565296.png";
 }
-
 function toggleFullscreen() {
   if (!document.fullscreenElement) {
     player.requestFullscreen();
@@ -245,11 +258,9 @@ function toggleFullscreen() {
     fullscreenBtn.src = "https://cdn-icons-png.flaticon.com/512/3354/3354155.png";
   }
 }
-
 function skip(sec) {
   player.currentTime += sec;
 }
-
 function updateUI() {
   const percent = (player.currentTime / player.duration) * 100;
   progressBar.style.width = percent + "%";
@@ -257,7 +268,6 @@ function updateUI() {
   currentTimeDisplay.innerText = formatTime(player.currentTime);
   localStorage.setItem(storageKey, player.currentTime);
 }
-
 player.addEventListener("timeupdate", updateUI);
 player.addEventListener("loadedmetadata", () => {
   totalTimeDisplay.innerText = formatTime(player.duration);
@@ -265,13 +275,10 @@ player.addEventListener("loadedmetadata", () => {
 player.addEventListener("ended", () => {
   playBtn.src = "https://cdn-icons-png.flaticon.com/512/2088/2088569.png";
 });
-
 container.addEventListener("click", e => {
   const rect = container.getBoundingClientRect();
-  const percent = (e.clientX - rect.left) / rect.width;
-  player.currentTime = percent * player.duration;
+  player.currentTime = ((e.clientX - rect.left) / rect.width) * player.duration;
 });
-
 container.addEventListener("mousemove", e => {
   const rect = container.getBoundingClientRect();
   const percent = (e.clientX - rect.left) / rect.width;
@@ -294,6 +301,19 @@ document.addEventListener("mousemove", e => {
 function copyLink() {
   navigator.clipboard.writeText(location.href).then(() => alert("🔗 Link copied!"));
 }
+
+// Auto-hide controls
+let hideTimer = null;
+const wrapper = $("videoWrapper");
+function resetControls() {
+  wrapper.classList.remove("hide-controls");
+  clearTimeout(hideTimer);
+  hideTimer = setTimeout(() => {
+    wrapper.classList.add("hide-controls");
+  }, 5000);
+}
+wrapper.addEventListener("mousemove", resetControls);
+resetControls();
 </script>
 
 </body>
