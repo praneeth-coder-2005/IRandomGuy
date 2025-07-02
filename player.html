@@ -14,60 +14,89 @@
     }
     .player-container {
       position: relative;
-      width: 100%;
+      width: 100vw;
       height: 100vh;
       background: #000;
+      overflow: hidden;
     }
     video {
       width: 100%;
       height: 100%;
       background: #000;
     }
-    .controls {
+
+    /* Center control icons */
+    .center-controls {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      display: flex;
+      gap: 30px;
+      align-items: center;
+      justify-content: center;
+    }
+    .center-controls img {
+      width: 40px;
+      height: 40px;
+      cursor: pointer;
+      opacity: 0.9;
+    }
+
+    /* Bottom controls */
+    .bottom-controls {
       position: absolute;
       bottom: 0;
       left: 0;
       right: 0;
-      background: rgba(0,0,0,0.6);
+      background: rgba(0, 0, 0, 0.7);
+      padding: 6px 12px;
       display: flex;
       flex-wrap: wrap;
       justify-content: space-between;
       align-items: center;
-      padding: 10px;
     }
-    .controls button, .controls select {
-      background: transparent;
-      border: none;
-      color: white;
-      font-size: 16px;
-      padding: 5px 10px;
-      margin: 2px;
-      cursor: pointer;
+
+    .bottom-left, .bottom-right {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
     }
+
     .progress-container {
-      width: 100%;
+      position: absolute;
+      bottom: 40px;
+      left: 0;
+      right: 0;
       height: 6px;
-      background: #555;
+      background: #444;
       cursor: pointer;
-      margin-top: 2px;
     }
-    .progress {
+    .progress-bar {
       height: 100%;
       background: #1e88e5;
       width: 0%;
     }
-    .time {
-      font-size: 12px;
-      padding: 0 8px;
+
+    #skip-intro, #skip-outro {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      padding: 6px 12px;
+      background: #1e88e5;
+      color: white;
+      border: none;
+      font-size: 14px;
+      display: none;
+      cursor: pointer;
+      z-index: 10;
     }
+    #skip-outro { top: 60px; }
+
     @media (max-width: 600px) {
-      .controls {
-        flex-direction: column;
-        gap: 8px;
-      }
-      .time {
-        order: -1;
-      }
+      .center-controls img { width: 30px; height: 30px; }
+      .bottom-controls { flex-direction: column; align-items: flex-start; gap: 8px; }
     }
   </style>
 </head>
@@ -79,45 +108,57 @@
     <track src="subtitles.vtt" kind="subtitles" srclang="en" label="English" />
   </video>
 
-  <div class="controls">
-    <div>
-      <button id="playpause">▶️</button>
-      <button id="rewind">⏪ 10s</button>
-      <button id="forward">10s ⏩</button>
-      <button id="mute">🔊</button>
-      <button id="fullscreen">⛶</button>
-      <button id="subtitles" style="display:none;">CC</button>
-    </div>
-    <div class="time">
-      <span id="current">00:00</span> / <span id="duration">00:00</span>
-    </div>
-    <select id="speed">
-      <option value="0.5">0.5x</option>
-      <option value="1" selected>1x</option>
-      <option value="1.5">1.5x</option>
-      <option value="2">2x</option>
-    </select>
+  <button id="skip-intro">Skip Intro</button>
+  <button id="skip-outro">Skip Outro</button>
+
+  <!-- Center controls -->
+  <div class="center-controls">
+    <img src="https://cdn-icons-png.flaticon.com/512/5296/5296749.png" id="rewindBtn" title="Back 10s">
+    <img src="https://cdn-icons-png.flaticon.com/512/2088/2088569.png" id="playPauseBtn" title="Play">
+    <img src="https://cdn-icons-png.flaticon.com/512/5293/5293447.png" id="forwardBtn" title="Forward 10s">
   </div>
 
+  <!-- Progress bar -->
   <div class="progress-container" id="progress-container">
-    <div class="progress" id="progress-bar"></div>
+    <div class="progress-bar" id="progress-bar"></div>
+  </div>
+
+  <!-- Bottom controls -->
+  <div class="bottom-controls">
+    <div class="bottom-left">
+      <span id="time">00:00 / 00:00</span>
+      <button id="ccBtn">CC</button>
+    </div>
+    <div class="bottom-right">
+      <input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="1" />
+      <select id="speedControl">
+        <option value="0.5">0.5x</option>
+        <option value="1" selected>1x</option>
+        <option value="1.5">1.5x</option>
+        <option value="2">2x</option>
+      </select>
+      <button id="fsBtn">⛶</button>
+    </div>
   </div>
 </div>
 
 <script>
   const video = document.getElementById('video');
-  const playPauseBtn = document.getElementById('playpause');
-  const muteBtn = document.getElementById('mute');
-  const fullscreenBtn = document.getElementById('fullscreen');
-  const speedSelect = document.getElementById('speed');
-  const subtitleBtn = document.getElementById('subtitles');
-  const rewindBtn = document.getElementById('rewind');
-  const forwardBtn = document.getElementById('forward');
+  const playPauseBtn = document.getElementById('playPauseBtn');
+  const rewindBtn = document.getElementById('rewindBtn');
+  const forwardBtn = document.getElementById('forwardBtn');
   const progressBar = document.getElementById('progress-bar');
   const progressContainer = document.getElementById('progress-container');
-  const currentTimeEl = document.getElementById('current');
-  const durationEl = document.getElementById('duration');
+  const ccBtn = document.getElementById('ccBtn');
+  const volumeSlider = document.getElementById('volumeSlider');
+  const speedControl = document.getElementById('speedControl');
+  const fsBtn = document.getElementById('fsBtn');
+  const skipIntro = document.getElementById('skip-intro');
+  const skipOutro = document.getElementById('skip-outro');
+  const timeDisplay = document.getElementById('time');
 
+  const introEndTime = 60;
+  const outroLength = 30;
   const STORAGE_KEY = "troop-video-position";
 
   const format = (t) => {
@@ -126,62 +167,64 @@
     return `${m}:${s}`;
   };
 
-  video.addEventListener("loadedmetadata", () => {
+  // Load position + track
+  video.addEventListener('loadedmetadata', () => {
     const savedTime = localStorage.getItem(STORAGE_KEY);
     if (savedTime) video.currentTime = parseFloat(savedTime);
-    durationEl.textContent = format(video.duration);
 
     const track = video.textTracks[0];
     if (track) {
       track.mode = "showing";
-      subtitleBtn.style.display = "inline-block";
-      subtitleBtn.style.opacity = 1;
+      ccBtn.style.opacity = 1;
     }
   });
 
-  video.addEventListener("timeupdate", () => {
-    currentTimeEl.textContent = format(video.currentTime);
-    progressBar.style.width = `${(video.currentTime / video.duration) * 100}%`;
-    localStorage.setItem(STORAGE_KEY, video.currentTime);
+  // Save position + update UI
+  video.addEventListener('timeupdate', () => {
+    const cur = video.currentTime;
+    const dur = video.duration;
+    timeDisplay.textContent = `${format(cur)} / ${format(dur)}`;
+    progressBar.style.width = `${(cur / dur) * 100}%`;
+    localStorage.setItem(STORAGE_KEY, cur);
+
+    skipIntro.style.display = cur < introEndTime ? 'block' : 'none';
+    skipOutro.style.display = (dur - cur <= outroLength) ? 'block' : 'none';
   });
+
+  progressContainer.onclick = e => {
+    const percent = e.offsetX / progressContainer.offsetWidth;
+    video.currentTime = percent * video.duration;
+  };
 
   playPauseBtn.onclick = () => {
     if (video.paused) {
-      video.play(); playPauseBtn.textContent = '⏸️';
+      video.play();
+      playPauseBtn.src = "https://cdn-icons-png.flaticon.com/512/1214/1214428.png";
     } else {
-      video.pause(); playPauseBtn.textContent = '▶️';
-    }
-  };
-
-  muteBtn.onclick = () => {
-    video.muted = !video.muted;
-    muteBtn.textContent = video.muted ? '🔇' : '🔊';
-  };
-
-  fullscreenBtn.onclick = () => {
-    if (document.fullscreenElement) document.exitFullscreen();
-    else video.requestFullscreen();
-  };
-
-  speedSelect.onchange = () => {
-    video.playbackRate = parseFloat(speedSelect.value);
-  };
-
-  subtitleBtn.onclick = () => {
-    const track = video.textTracks[0];
-    if (track) {
-      const showing = track.mode === "showing";
-      track.mode = showing ? "disabled" : "showing";
-      subtitleBtn.style.opacity = showing ? "0.5" : "1";
+      video.pause();
+      playPauseBtn.src = "https://cdn-icons-png.flaticon.com/512/2088/2088569.png";
     }
   };
 
   rewindBtn.onclick = () => video.currentTime -= 10;
   forwardBtn.onclick = () => video.currentTime += 10;
+  skipIntro.onclick = () => video.currentTime = introEndTime;
+  skipOutro.onclick = () => video.currentTime = video.duration;
 
-  progressContainer.onclick = (e) => {
-    const percent = e.offsetX / progressContainer.offsetWidth;
-    video.currentTime = percent * video.duration;
+  volumeSlider.oninput = () => video.volume = volumeSlider.value;
+  speedControl.onchange = () => video.playbackRate = parseFloat(speedControl.value);
+
+  ccBtn.onclick = () => {
+    const track = video.textTracks[0];
+    if (!track) return;
+    const on = track.mode === "showing";
+    track.mode = on ? "disabled" : "showing";
+    ccBtn.style.opacity = on ? 0.5 : 1;
+  };
+
+  fsBtn.onclick = () => {
+    if (document.fullscreenElement) document.exitFullscreen();
+    else video.requestFullscreen();
   };
 </script>
 
