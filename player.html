@@ -87,6 +87,91 @@
       height: 24px;
       filter: brightness(0) invert(1);
     }
+    .info {
+      max-width: 900px;
+      margin: auto;
+      padding: 20px;
+    }
+    .meta {
+      color: #999;
+      margin: 10px 0;
+      font-size: 14px;
+    }
+    .stars {
+      margin: 10px 0;
+      font-size: 18px;
+    }
+    .cast-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 15px;
+      margin: 15px 0;
+    }
+    .cast-grid div {
+      text-align: center;
+    }
+    .cast-grid img {
+      width: 100%;
+      border-radius: 8px;
+      margin-bottom: 5px;
+    }
+    .cast-grid div div {
+      font-size: 12px;
+      line-height: 1.2;
+    }
+    .trailer {
+      margin: 20px 0;
+    }
+    .trailer iframe {
+      width: 100%;
+      height: 315px;
+      border: none;
+      border-radius: 8px;
+    }
+    .share-btn {
+      background: #1e88e5;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      font-size: 14px;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+    .share-btn:hover {
+      background: #1976d2;
+    }
+    .desc-toggle {
+      color: #1e88e5;
+      cursor: pointer;
+      font-size: 14px;
+      text-decoration: underline;
+      display: block;
+      margin-top: 10px;
+    }
+    .desc-toggle:hover {
+      color: #1976d2;
+    }
+    #descText {
+      max-height: 100px;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+    }
+    @media (max-width: 768px) {
+      .top-bar {
+        padding: 8px 10px;
+      }
+      .info {
+        padding: 15px;
+      }
+      .cast-grid {
+        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+        gap: 10px;
+      }
+      .trailer iframe {
+        height: 200px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -103,7 +188,7 @@
 <div class="video-wrapper" id="videoWrapper">
   <video id="player" preload="auto" controlslist="nodownload">
     <source id="videoSource" src="" type="video/mp4" />
-    <track id="subtitleTrack" kind="subtitles" srclang="en" label="English" default hidden>
+    <track id="subtitleTrack" kind="subtitles" srclang="en" label="English" hidden>
   </video>
   <div class="pause-overlay" id="pauseOverlay">
     <div class="spinner" id="spinner"></div>
@@ -116,7 +201,7 @@
   <div class="meta" id="metaText"></div>
   <div class="stars" id="ratingStars"></div>
   <p id="descText"></p>
-  <span class="desc-toggle" onclick="toggleDesc()">Show more</span>
+  <span class="desc-toggle" onclick="toggleDesc(event)">Show more</span>
 
   <h3 style="margin-top: 20px;">Cast</h3>
   <div class="cast-grid" id="castGrid">Loading...</div>
@@ -159,11 +244,11 @@ const spinner = $("spinner");
 const muteIcon = $("muteIcon");
 const subTrack = $("subtitleTrack");
 
-function toggleDesc() {
+function toggleDesc(event) {
   const t = $("descText");
   const btn = event.target;
-  if (t.style.maxHeight) {
-    t.style.maxHeight = "";
+  if (t.style.maxHeight && t.style.maxHeight !== "100px") {
+    t.style.maxHeight = "100px";
     btn.innerText = "Show more";
   } else {
     t.style.maxHeight = "none";
@@ -218,10 +303,22 @@ player.addEventListener("volumechange", () => {
 });
 
 document.addEventListener("keydown", e => {
-  if (e.code === "Space") togglePlay();
-  if (e.key === "f") toggleFullscreen();
-  if (e.key === "ArrowRight") player.currentTime += 10;
-  if (e.key === "ArrowLeft") player.currentTime -= 10;
+  if (e.code === "Space") {
+    e.preventDefault();
+    togglePlay();
+  }
+  if (e.key === "f" || e.key === "F") {
+    e.preventDefault();
+    toggleFullscreen();
+  }
+  if (e.key === "ArrowRight") {
+    e.preventDefault();
+    player.currentTime += 10;
+  }
+  if (e.key === "ArrowLeft") {
+    e.preventDefault();
+    player.currentTime -= 10;
+  }
 });
 
 function togglePlay() {
