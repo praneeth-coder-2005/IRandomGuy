@@ -6,23 +6,36 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     body { margin: 0; background: #111; font-family: sans-serif; color: white; }
+
     .blur-bg {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background-size: cover; background-position: center;
       filter: blur(20px); opacity: 0.3; z-index: -1;
     }
+
     .top-bar {
       display: flex; justify-content: space-between; align-items: center;
       background: rgba(0, 0, 0, 0.6); padding: 10px 15px;
       position: sticky; top: 0; z-index: 1000;
     }
+
     .top-bar button {
       background: rgba(255,255,255,0.1); color: white;
       border: none; padding: 6px 12px; border-radius: 4px;
       font-size: 14px; cursor: pointer;
     }
-    .video-wrapper { position: relative; background: black; }
-    video { width: 100%; height: auto; }
+
+    .video-wrapper {
+      position: relative;
+      background: black;
+      height: 30vh;
+    }
+
+    video {
+      width: 100%;
+      height: 100%;
+      background: black;
+    }
 
     .controls {
       background: rgba(0, 0, 0, 0.6);
@@ -75,11 +88,14 @@
     .time-display { font-size: 13px; }
 
     .info {
-      padding: 15px;
+      padding: 20px;
+      height: 70vh;
+      overflow-y: auto;
     }
+
     .info h2 { margin: 8px 0; }
     .info .meta { font-size: 13px; color: #ccc; }
-    .info p { margin-top: 10px; line-height: 1.4; }
+    .info p { margin-top: 10px; line-height: 1.5; }
     .share-btn {
       background: #1e88e5; border: none; color: white;
       padding: 8px 14px; border-radius: 5px;
@@ -93,6 +109,7 @@
       border-radius: 5px; cursor: pointer;
       display: none; z-index: 999;
     }
+
     #skipOutroBtn { top: 60px; }
   </style>
 </head>
@@ -125,7 +142,7 @@
       <div class="bar-left">
         <img id="playBtn" src="https://cdn-icons-png.flaticon.com/512/2088/2088569.png" onclick="togglePlay()" alt="Play">
         <img src="https://cdn-icons-png.flaticon.com/512/9229/9229077.png" onclick="skip(-10)" alt="Back 10s">
-        <img src="https://cdn-icons-png.flaticon.com/512/565/565239.png" onclick="skip(10)" alt="Forward 10s">
+        <img src="https://cdn-icons-png.flaticon.com/512/5293/5293447.png" onclick="skip(10)" alt="Forward 10s">
         <img id="volumeBtn" src="https://cdn-icons-png.flaticon.com/512/565/565296.png" onclick="toggleMute()" alt="Volume">
         <span class="time-display"><span id="currentTime">0:00</span> / <span id="totalTime">0:00</span></span>
       </div>
@@ -226,6 +243,7 @@ function skip(sec) {
 function skipToIntro() {
   if (introEnd) player.currentTime = introEnd;
 }
+
 function skipToOutro() {
   if (outroStart) player.currentTime = outroStart;
 }
